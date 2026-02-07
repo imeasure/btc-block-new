@@ -6,6 +6,9 @@
     <title>Habfut 比特币情报终端</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.3.0/build/global/luxon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.min.js"></script>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
     <style>
@@ -16,7 +19,7 @@
         .hover-card:hover { border-color: #f7931a; box-shadow: 0 12px 20px -5px rgba(0,0,0,0.1); transform: translateY(-2px); }
         .sidebar-scroll::-webkit-scrollbar { width: 4px; }
         .sidebar-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-        .chart-container { position: relative; height: 180px; width: 100%; }
+        .chart-container { position: relative; height: 240px; width: 100%; } /* 稍微调高一点图表高度 */
     </style>
 </head>
 <body class="antialiased overflow-x-hidden">
@@ -94,6 +97,14 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <div class="pro-card p-5 rounded-2xl bg-slate-50 border border-slate-200">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">历史档案状态</p>
+                        <div class="flex items-center gap-2 text-xs font-medium text-slate-600">
+                            <i class="fas fa-database text-blue-500"></i>
+                            <span id="archive-status">仅加载热数据</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="lg:col-span-8 flex flex-col gap-6 overflow-hidden">
@@ -103,10 +114,12 @@
                             <h3 class="text-slate-900 font-black text-sm flex items-center">
                                 <i class="fas fa-chart-line text-orange-500 mr-2"></i> 巨鲸资金流向趋势 (BTC)
                             </h3>
-                            <div class="flex bg-slate-100 rounded-lg p-1">
-                                <button onclick="updateChart('24h')" id="btn-24h" class="text-[10px] font-bold px-3 py-1 rounded-md bg-white shadow text-slate-800 transition">24小时</button>
-                                <button onclick="updateChart('7d')" id="btn-7d" class="text-[10px] font-bold px-3 py-1 rounded-md text-slate-400 hover:text-slate-600 transition">7天</button>
-                                <button onclick="updateChart('30d')" id="btn-30d" class="text-[10px] font-bold px-3 py-1 rounded-md text-slate-400 hover:text-slate-600 transition">30天</button>
+                            <div class="flex bg-slate-100 rounded-lg p-1 gap-1">
+                                <button onclick="updateChart('24h')" id="btn-24h" class="text-[10px] font-bold px-3 py-1.5 rounded-md bg-white shadow text-slate-800 transition">24小时</button>
+                                <button onclick="updateChart('7d')" id="btn-7d" class="text-[10px] font-bold px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-600 transition">7天</button>
+                                <button onclick="loadAllHistory()" id="btn-all" class="text-[10px] font-bold px-3 py-1.5 rounded-md text-blue-500 hover:text-blue-700 hover:bg-blue-50 transition flex items-center">
+                                    <i class="fas fa-cloud-download-alt mr-1"></i> 加载全史
+                                </button>
                             </div>
                         </div>
                         <div class="chart-container">
@@ -140,6 +153,14 @@
         let allData = [], filteredData = [], currentPage = 1;
         const pageSize = 20;
         let whaleChartInstance = null;
+        let isHistoryLoaded = false; // 标记是否已加载历史
+
+        // --- 配置 ---
+        const REPO_OWNER = 'lovexw';
+        const REPO_NAME = 'btc-block-new';
+        // 起始归档月份 (根据你monitor.py的运行时间设定，防止无效请求)
+        const START_YEAR = 2026; 
+        const START_MONTH = 2; // 2月
 
         function updateClock() {
             const now = new Date();
@@ -156,74 +177,143 @@
                 const pwInput = document.getElementById('pw');
                 pwInput.classList.add('ring-2', 'ring-red-500');
                 setTimeout(() => pwInput.classList.remove('ring-2', 'ring-red-500'), 500);
-                alert('口令错误，请重试');
+                alert('口令错误');
             }
         }
-
-        function skipAuth() {
-            showMainContent();
-        }
-
+        function skipAuth() { showMainContent(); }
         function showMainContent() {
-            const auth = document.getElementById('auth-screen');
-            auth.classList.add('opacity-0');
-            setTimeout(() => { 
-                auth.remove(); 
-                const main = document.getElementById('main-content');
-                main.classList.replace('hidden', 'flex'); 
-                setTimeout(() => main.classList.add('opacity-100'), 50);
-                init();
-            }, 400);
+            document.getElementById('auth-screen').remove();
+            const main = document.getElementById('main-content');
+            main.classList.replace('hidden', 'flex'); 
+            setTimeout(() => main.classList.add('opacity-100'), 50);
+            init();
         }
 
         async function init() {
             try {
-                // 请确保 monitor.py 已在后台运行并生成了新的 data.json
-                const url = 'https://raw.githubusercontent.com/lovexw/btc-block-new/refs/heads/main/data.json?t=' + Date.now();
+                // 加载热数据
+                const url = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/data.json?t=` + Date.now();
                 const resp = await fetch(url);
                 const data = await resp.json();
                 
-                document.getElementById('stat-height').innerText = data.last_height || '-';
-                document.getElementById('stat-count').innerText = data.history.length;
-                
-                if(data.daily_max && data.daily_max.value > 0) {
-                    document.getElementById('daily-max-val').innerText = data.daily_max.value.toFixed(2);
-                    document.getElementById('daily-max-txid').innerText = data.daily_max.txid;
-                    document.getElementById('daily-max-link').href = 'https://mempool.space/zh/tx/' + data.daily_max.txid;
-                }
-
-                allData = data.history.reverse();
-                
-                // 兼容性处理：如果没有时间戳，按每10分钟倒推
-                let nowTs = Math.floor(Date.now() / 1000);
-                allData.forEach((item, index) => {
-                    if(!item.time) {
-                        item.time = nowTs - (index * 600); 
-                    }
-                });
-
-                filteredData = [...allData];
+                updateStats(data);
+                processData(data.history);
                 render();
                 initChart(allData);
 
-            } catch (e) { console.error(e); }
+            } catch (e) { console.error("初始化失败:", e); }
         }
 
+        function updateStats(data) {
+            document.getElementById('stat-height').innerText = data.last_height || '-';
+            // 此时 count 只是热数据
+            document.getElementById('stat-count').innerText = data.history ? data.history.length : '-'; 
+            
+            if(data.daily_max && data.daily_max.value > 0) {
+                document.getElementById('daily-max-val').innerText = data.daily_max.value.toFixed(2);
+                document.getElementById('daily-max-txid').innerText = data.daily_max.txid;
+                document.getElementById('daily-max-link').href = 'https://mempool.space/zh/tx/' + data.daily_max.txid;
+            }
+        }
+
+        function processData(history) {
+            // 按高度倒序
+            allData = history.sort((a, b) => b.height - a.height);
+            
+            // 补全时间戳逻辑
+            let nowTs = Math.floor(Date.now() / 1000);
+            allData.forEach((item, index) => {
+                if(!item.time) item.time = nowTs - (index * 600);
+            });
+            filteredData = [...allData];
+        }
+
+        // --- 核心：加载全史逻辑 ---
+        async function loadAllHistory() {
+            if (isHistoryLoaded) return;
+            const btn = document.getElementById('btn-all');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> 同步档案中...';
+            btn.disabled = true;
+
+            const now = new Date();
+            let currentYear = now.getFullYear();
+            let currentMonth = now.getMonth() + 1;
+
+            let fetchTasks = [];
+
+            // 循环生成从当前月份回溯到起始月份的文件路径
+            while (true) {
+                if (currentYear < START_YEAR || (currentYear === START_YEAR && currentMonth < START_MONTH)) break;
+                
+                const monthStr = currentMonth.toString().padStart(2, '0');
+                const fileUrl = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/archive/${currentYear}_${monthStr}.json`;
+                
+                // 创建异步请求任务
+                fetchTasks.push(
+                    fetch(fileUrl).then(res => {
+                        if(res.ok) return res.json();
+                        return []; // 文件不存在则返回空数组
+                    }).catch(() => [])
+                );
+
+                // 月份递减逻辑
+                currentMonth--;
+                if (currentMonth === 0) {
+                    currentMonth = 12;
+                    currentYear--;
+                }
+            }
+
+            try {
+                // 并发下载所有档案
+                const results = await Promise.all(fetchTasks);
+                let archivedBlocks = results.flat();
+
+                // 合并数据：热数据 + 冷数据
+                // 使用 Map 去重 (按高度)
+                const dataMap = new Map();
+                allData.forEach(b => dataMap.set(b.height, b));
+                archivedBlocks.forEach(b => dataMap.set(b.height, b));
+
+                // 重新生成 allData
+                allData = Array.from(dataMap.values()).sort((a, b) => b.height - a.height);
+                filteredData = [...allData];
+
+                // 更新 UI
+                document.getElementById('stat-count').innerText = allData.length; // 更新总数
+                document.getElementById('archive-status').innerHTML = `<span class="text-green-500">已加载 ${allData.length} 个历史区块</span>`;
+                
+                render();
+                updateChart('all'); // 更新图表为全览模式
+
+                btn.innerHTML = '<i class="fas fa-check mr-1"></i> 已加载全史';
+                btn.className = "text-[10px] font-bold px-3 py-1.5 rounded-md bg-blue-50 text-blue-600 transition flex items-center";
+                isHistoryLoaded = true;
+
+            } catch (e) {
+                console.error("历史加载失败", e);
+                btn.innerHTML = '加载失败，重试';
+                btn.disabled = false;
+            }
+        }
+
+        // --- 图表 ---
         function initChart(data) {
             const ctx = document.getElementById('whaleChart').getContext('2d');
-            const slicedData = data.slice(0, 144).reverse();
+            // 默认显示最近 144 个点
+            const slicedData = data.slice(0, 144).reverse(); 
 
             whaleChartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: slicedData.map(d => d.height),
+                    labels: slicedData.map(d => d.time * 1000), // X轴用时间戳
                     datasets: [{
-                        label: '最大转账金额 (BTC)',
+                        label: '最大转账 (BTC)',
                         data: slicedData.map(d => d.top_txs[0].value),
                         borderColor: '#f97316',
                         backgroundColor: 'rgba(249, 115, 22, 0.1)',
                         borderWidth: 2,
-                        pointRadius: 0, 
+                        pointRadius: 0,
                         pointHoverRadius: 6,
                         fill: true,
                         tension: 0.3
@@ -232,23 +322,14 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false,
-                            callbacks: {
-                                label: function(context) {
-                                    return context.parsed.y.toFixed(2) + ' BTC';
-                                },
-                                title: function(context) {
-                                    return '区块高度: ' + context[0].label;
-                                }
-                            }
-                        }
-                    },
+                    plugins: { legend: { display: false } },
                     scales: {
-                        x: { display: false },
+                        x: { 
+                            type: 'time', 
+                            time: { unit: 'day', displayFormats: { day: 'MM-dd' } },
+                            grid: { display: false },
+                            ticks: { font: { size: 9 }, color: '#94a3b8' }
+                        },
                         y: {
                             beginAtZero: true,
                             grid: { color: '#f1f5f9' },
@@ -260,22 +341,32 @@
         }
 
         function updateChart(period) {
-            ['24h', '7d', '30d'].forEach(p => {
+            // 按钮样式逻辑
+            ['24h', '7d', 'all'].forEach(p => {
                 const btn = document.getElementById(`btn-${p}`);
-                if (p === period) {
-                    btn.className = "text-[10px] font-bold px-3 py-1 rounded-md bg-white shadow text-slate-800 transition";
-                } else {
-                    btn.className = "text-[10px] font-bold px-3 py-1 rounded-md text-slate-400 hover:text-slate-600 transition";
-                }
+                if(!btn) return;
+                const activeClass = "text-[10px] font-bold px-3 py-1.5 rounded-md bg-white shadow text-slate-800 transition";
+                const inactiveClass = "text-[10px] font-bold px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-600 transition";
+                btn.className = (p === period) ? activeClass : inactiveClass;
             });
 
-            let count = 144; 
-            if (period === '7d') count = 144 * 7;
-            if (period === '30d') count = 144 * 30;
+            // 筛选数据
+            let count = allData.length;
+            if (period === '24h') count = 144; // ~1天
+            if (period === '7d') count = 144 * 7; 
+
+            // 如果点击全部但还没加载历史，先自动加载
+            if (period === 'all' && !isHistoryLoaded) {
+                loadAllHistory();
+                return;
+            }
 
             const newData = allData.slice(0, count).reverse();
-            whaleChartInstance.data.labels = newData.map(d => d.height);
+            whaleChartInstance.data.labels = newData.map(d => d.time * 1000);
             whaleChartInstance.data.datasets[0].data = newData.map(d => d.top_txs[0].value);
+            
+            // 调整 X 轴密度
+            whaleChartInstance.options.scales.x.time.unit = (period === '24h') ? 'hour' : 'day';
             whaleChartInstance.update();
         }
 
@@ -293,7 +384,7 @@
                         <div class="flex items-center gap-4 overflow-hidden">
                             <span class="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-[10px] font-black text-slate-400 group-hover:bg-orange-50 group-hover:text-orange-600 transition-colors">#${i+1}</span>
                             <div class="flex flex-col truncate">
-                                <span class="text-[8px] font-black text-slate-300 uppercase leading-none mb-1">交易哈希 (TXID)</span>
+                                <span class="text-[8px] font-black text-slate-300 uppercase leading-none mb-1">交易哈希</span>
                                 <span class="font-mono text-[11px] text-slate-500 truncate w-32 md:w-80 font-medium" title="${tx.txid}">${tx.txid}</span>
                             </div>
                         </div>
@@ -302,7 +393,7 @@
                                 <span class="font-black text-slate-900 font-mono text-base tracking-tighter">${tx.value.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
                                 <span class="text-[9px] font-black text-orange-500 ml-1">BTC</span>
                             </div>
-                            <a href="https://mempool.space/zh/tx/${tx.txid}" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-300 hover:bg-slate-900 hover:text-white transition-all shadow-sm" title="去浏览器查看">
+                            <a href="https://mempool.space/zh/tx/${tx.txid}" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-300 hover:bg-slate-900 hover:text-white transition-all shadow-sm">
                                 <i class="fas fa-chevron-right text-[10px]"></i>
                             </a>
                         </div>
@@ -313,7 +404,7 @@
                     <div class="flex justify-between items-center pb-4 border-b-2 border-slate-100">
                         <div class="flex items-center gap-4">
                             <div class="w-2 h-8 btc-gradient rounded-full"></div>
-                            <span class="text-2xl font-black text-slate-900 font-mono tracking-tighter">区块高度 #${block.height}</span>
+                            <span class="text-2xl font-black text-slate-900 font-mono tracking-tighter">区块 #${block.height}</span>
                         </div>
                         <div class="flex flex-col items-end">
                             <span class="text-[9px] font-black text-green-600 bg-green-50 px-3 py-1 rounded-full border border-green-200 uppercase tracking-widest flex items-center gap-2">
