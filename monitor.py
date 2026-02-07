@@ -70,7 +70,7 @@ def main():
                 block_hash = block_info['blocks'][0]['hash']
                 top_3 = get_block_top_3(block_hash)
                 
-                # 核心：实时对比并替换今日最大转账
+                # 实时对比并替换今日最大转账
                 if top_3 and top_3[0]['value'] > store["daily_max"]["value"]:
                     store["daily_max"] = {
                         "value": top_3[0]['value'],
