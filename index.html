@@ -1,99 +1,228 @@
-import requests
-import json
-import os
-import time
-from datetime import datetime, timedelta, timezone
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habfut BTC Professional Intelligence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; }
+        .font-mono { font-family: 'Roboto Mono', monospace; }
+        .pro-card { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05); }
+        .btc-gradient { background: linear-gradient(135deg, #f7931a 0%, #ffab40 100%); }
+        .hover-card:hover { border-color: #f7931a; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body class="antialiased overflow-x-hidden">
 
-DATA_FILE = "data.json"
+    <div id="auth-screen" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-100/90 backdrop-blur-md transition-opacity duration-500">
+        <div class="pro-card p-10 rounded-2xl shadow-xl text-center max-w-sm w-full mx-4">
+            <div class="w-16 h-16 btc-gradient rounded-xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-orange-500/20 transform rotate-3">
+                <i class="fab fa-bitcoin text-3xl text-white"></i>
+            </div>
+            <h2 class="text-2xl font-bold mb-2">Habfut 情报终端</h2>
+            <p class="text-slate-500 text-sm mb-8">请输入授权口令</p>
+            <input type="password" id="pw" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-lg mb-4 text-center outline-none focus:ring-2 focus:ring-orange-200 font-mono" placeholder="habfut.com">
+            <button onclick="verify()" class="w-full btc-gradient py-3 rounded-lg font-bold text-white transition hover:opacity-90 active:scale-95">进入终端</button>
+        </div>
+    </div>
 
-def get_beijing_time():
-    """获取当前的北京时间"""
-    # UTC+8
-    tz_bj = timezone(timedelta(hours=8))
-    return datetime.now(tz_bj)
+    <main id="main-content" class="hidden opacity-0 transition-opacity duration-700 flex-col">
+        <div class="container mx-auto px-4 py-6 lg:h-screen lg:overflow-hidden flex flex-col">
+            
+            <header class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 bg-white p-4 rounded-2xl pro-card">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 btc-gradient rounded-lg flex items-center justify-center shadow-sm">
+                        <i class="fab fa-bitcoin text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-slate-800 tracking-tight">HABFUT <span class="text-orange-600">BTC</span> MONITOR</h1>
+                        <div class="flex items-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                            <span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+                            Live Intelligence Stream
+                        </div>
+                    </div>
+                </div>
 
-def get_latest_height():
-    try:
-        resp = requests.get("https://blockchain.info/latestblock", timeout=10)
-        return resp.json()['height']
-    except Exception as e:
-        print(f"获取最新高度失败: {e}")
-        return None
+                <div class="bg-slate-900 text-white px-5 py-2 rounded-xl flex items-center gap-4 shadow-inner">
+                    <div class="text-right border-r border-slate-700 pr-4">
+                        <p class="text-[9px] text-slate-500 uppercase font-bold leading-none mb-1">Beijing Time</p>
+                        <p id="bj-clock" class="text-lg font-mono font-bold leading-none">00:00:00</p>
+                    </div>
+                    <i class="fas fa-clock text-orange-500 text-xl"></i>
+                </div>
+            </header>
 
-def get_block_top_3(block_hash):
-    url = f"https://blockchain.info/rawblock/{block_hash}"
-    try:
-        resp = requests.get(url, timeout=30).json()
-        all_txs = []
-        for tx in resp['tx']:
-            total_value = sum(out['value'] for out in tx['out']) / 100000000
-            all_txs.append({"txid": tx['hash'], "value": total_value})
-        
-        all_txs.sort(key=lambda x: x['value'], reverse=True)
-        return all_txs[:3]
-    except Exception as e:
-        print(f"解析区块 {block_hash} 失败: {e}")
-        return []
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 overflow-hidden">
+                
+                <div class="lg:col-span-4 space-y-6 overflow-y-auto pr-1">
+                    <div class="pro-card p-6 rounded-2xl bg-white border-t-4 border-t-orange-500 relative overflow-hidden group">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-slate-500 text-[11px] font-black uppercase tracking-tighter">Today's Max Transfer</h3>
+                            <i class="fas fa-crown text-orange-200 group-hover:text-orange-400 transition-colors"></i>
+                        </div>
+                        <div class="flex items-baseline gap-2 mb-3">
+                            <p class="text-4xl font-black text-slate-800 font-mono tracking-tighter" id="daily-max-val">0.00</p>
+                            <p class="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded">BTC</p>
+                        </div>
+                        <div class="flex flex-col gap-3">
+                            <p class="text-[10px] font-mono text-slate-400 truncate bg-slate-50 p-2 rounded" id="daily-max-txid">Waiting for data...</p>
+                            <a id="daily-max-link" href="#" target="_blank" class="text-center bg-slate-800 text-white py-2 rounded-lg text-xs font-bold hover:bg-orange-600 transition flex items-center justify-center gap-2">
+                                <i class="fas fa-search-dollar"></i> 点击查看今日最壕交易
+                            </a>
+                        </div>
+                    </div>
 
-def main():
-    now_bj = get_beijing_time()
-    today_str = now_bj.strftime("%Y-%m-%d")
+                    <div class="pro-card p-6 rounded-2xl bg-white">
+                        <h3 class="text-slate-500 text-[11px] font-black uppercase tracking-tighter mb-5">System Statistics</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                <p class="text-slate-400 text-[9px] font-bold uppercase mb-1">Latest Block</p>
+                                <p class="text-xl font-bold text-slate-800 font-mono" id="stat-height">-</p>
+                            </div>
+                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                <p class="text-slate-400 text-[9px] font-bold uppercase mb-1">Captured</p>
+                                <p class="text-xl font-bold text-orange-600 font-mono" id="stat-count">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-    # 1. 加载数据
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r") as f:
-            store = json.load(f)
-    else:
-        init_height = get_latest_height()
-        store = {
-            "last_height": init_height - 1, 
-            "last_date": today_str,
-            "daily_max": {"value": 0, "txid": "N/A", "height": 0},
-            "history": []
+                <div class="lg:col-span-8 flex flex-col pro-card rounded-2xl overflow-hidden bg-white">
+                    <div class="px-6 py-4 border-b border-slate-200 bg-slate-50/50 flex justify-between items-center">
+                        <div class="relative w-64">
+                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 text-xs"></i>
+                            <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Search Height / TXID" class="w-full text-[11px] font-bold pl-9 pr-3 py-1.5 border border-slate-200 rounded-lg outline-none focus:border-orange-400 transition-colors">
+                        </div>
+                        <div id="pageInfo" class="text-[10px] font-black text-slate-400 font-mono bg-white px-3 py-1 rounded-full border border-slate-100">PAGE 1 / 1</div>
+                    </div>
+
+                    <div id="block-list" class="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-100/30 custom-scrollbar">
+                        </div>
+                    
+                    <div class="p-3 border-t border-slate-200 flex justify-between items-center bg-white px-6">
+                        <button onclick="prevPage()" id="prevBtn" class="text-[10px] font-black px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-20 transition-all uppercase tracking-widest">Prev</button>
+                        <button onclick="nextPage()" id="nextBtn" class="text-[10px] font-black px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-20 transition-all uppercase tracking-widest">Next</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let allData = [];
+        let filteredData = [];
+        let currentPage = 1;
+        const pageSize = 20;
+
+        // 北京时间实时刷新
+        function updateClock() {
+            const now = new Date();
+            const bjTime = new Date(now.getTime() + (now.getTimezoneOffset() + 480) * 60000);
+            document.getElementById('bj-clock').innerText = bjTime.toTimeString().split(' ')[0];
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function verify() {
+            if(document.getElementById('pw').value === 'habfut.com') {
+                const auth = document.getElementById('auth-screen');
+                auth.classList.add('opacity-0');
+                setTimeout(() => { 
+                    auth.remove(); 
+                    const main = document.getElementById('main-content');
+                    main.classList.replace('hidden', 'flex'); 
+                    setTimeout(() => main.classList.add('opacity-100'), 50);
+                }, 400);
+                init();
+            } else {
+                alert('Passcode Incorrect');
+            }
         }
 
-    # 2. 跨天重置逻辑
-    if store.get("last_date") != today_str:
-        print(f"📅 检测到新的一天 ({today_str})，重置今日最大转账。")
-        store["daily_max"] = {"value": 0, "txid": "N/A", "height": 0}
-        store["last_date"] = today_str
-
-    current_height = get_latest_height()
-    last_height = store["last_height"]
-
-    if current_height and current_height > last_height:
-        print(f"🚀 发现新区块: 从 {last_height + 1} 到 {current_height}")
-        
-        for h in range(last_height + 1, current_height + 1):
-            print(f"正在处理高度: {h}...")
-            time.sleep(1) 
-            
-            try:
-                block_info = requests.get(f"https://blockchain.info/block-height/{h}?format=json", timeout=20).json()
-                block_hash = block_info['blocks'][0]['hash']
-                top_3 = get_block_top_3(block_hash)
+        async function init() {
+            try {
+                // 替换为你真实的 GitHub Raw 路径
+                const url = 'https://raw.githubusercontent.com/lovexw/btc-block-new/main/data.json?t=' + Date.now();
+                const resp = await fetch(url);
+                const data = await resp.json();
                 
-                # 更新今日最大
-                if top_3 and top_3[0]['value'] > store["daily_max"]["value"]:
-                    store["daily_max"] = {
-                        "value": top_3[0]['value'],
-                        "txid": top_3[0]['txid'],
-                        "height": h
+                document.getElementById('stat-height').innerText = data.last_height || '-';
+                document.getElementById('stat-count').innerText = data.history.length;
+                
+                if(data.daily_max) {
+                    document.getElementById('daily-max-val').innerText = data.daily_max.value.toFixed(2);
+                    document.getElementById('daily-max-txid').innerText = data.daily_max.txid;
+                    // 更新详情链接
+                    if(data.daily_max.txid !== 'N/A') {
+                        document.getElementById('daily-max-link').href = 'https://mempool.space/zh/tx/' + data.daily_max.txid;
                     }
+                }
 
-                store["history"].append({"height": h, "top_txs": top_3})
-            except Exception as e:
-                print(f"处理区块 {h} 时出错: {e}")
-                continue
-        
-        store["history"] = store["history"][-100:]
-        store["last_height"] = current_height
+                allData = data.history.reverse();
+                filteredData = [...allData];
+                render();
+            } catch (e) {
+                console.error("Data Load Error:", e);
+            }
+        }
 
-        with open(DATA_FILE, "w") as f:
-            json.dump(store, f, indent=4)
-        print("✅ 数据同步完成")
-    else:
-        print("😴 暂无新区块")
+        function render() {
+            const list = document.getElementById('block-list');
+            list.innerHTML = '';
+            const pageItems = filteredData.slice((currentPage-1)*pageSize, currentPage*pageSize);
+            
+            pageItems.forEach(block => {
+                const card = document.createElement('div');
+                card.className = 'pro-card p-5 rounded-2xl bg-white hover-card transition-all flex flex-col gap-4';
+                
+                let txs = block.top_txs.map((tx, i) => `
+                    <div class="flex justify-between items-center py-2 border-b border-slate-50 last:border-0 group">
+                        <div class="flex items-center gap-3 overflow-hidden">
+                            <span class="w-6 h-6 rounded bg-slate-100 flex items-center justify-center text-[9px] font-black text-slate-400 group-hover:bg-orange-50 group-hover:text-orange-500 transition-colors">#${i+1}</span>
+                            <span class="font-mono text-[10px] text-slate-400 truncate w-32 md:w-64" title="${tx.txid}">${tx.txid}</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="font-bold text-slate-800 font-mono text-sm">${tx.value.toFixed(2)} <span class="text-[9px] text-orange-500">BTC</span></span>
+                            <a href="https://mempool.space/zh/tx/${tx.txid}" target="_blank" class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-50 text-slate-300 hover:bg-orange-500 hover:text-white transition-all">
+                                <i class="fas fa-external-link-alt text-[9px]"></i>
+                            </a>
+                        </div>
+                    </div>
+                `).join('');
 
-if __name__ == "__main__":
-    main()
+                card.innerHTML = `
+                    <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                        <span class="font-black text-[10px] font-mono tracking-widest text-slate-400 uppercase">Block #${block.height}</span>
+                        <span class="text-[8px] bg-green-50 text-green-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">Verified</span>
+                    </div>
+                    <div class="space-y-1">${txs}</div>
+                `;
+                list.appendChild(card);
+            });
+            updatePagination();
+        }
+
+        function updatePagination() {
+            const total = Math.ceil(filteredData.length / pageSize);
+            document.getElementById('pageInfo').innerText = `PAGE ${currentPage} / ${total || 1}`;
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = currentPage === total || total === 0;
+        }
+
+        function handleSearch() {
+            const val = document.getElementById('searchInput').value.trim().toLowerCase();
+            filteredData = allData.filter(b => b.height.toString().includes(val) || b.top_txs.some(t => t.txid.toLowerCase().includes(val)));
+            currentPage = 1;
+            render();
+        }
+
+        function prevPage() { if(currentPage > 1) { currentPage--; render(); } }
+        function nextPage() { if(currentPage < Math.ceil(filteredData.length / pageSize)) { currentPage++; render(); } }
+
+        document.getElementById('pw').addEventListener('keypress', (e) => { if (e.key === 'Enter') verify(); });
+    </script>
+</body>
+</html>
