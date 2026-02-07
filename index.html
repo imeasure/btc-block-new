@@ -182,8 +182,11 @@
                 // 模拟加载延迟，展示骨架屏效果（可选）
                 // document.getElementById('block-list').innerHTML = '<div class="animate-pulse space-y-4">...骨架屏代码...</div>';
                 
-                const resp = await fetch('https://github.com/lovexw/btc-block-new/blob/main/data.json');
-                if (!resp.ok) throw new Error('Network response was not ok');
+                const resp = await fetch('https://raw.githubusercontent.com/lovexw/btc-block-new/refs/heads/main/data.json');
+// 2. 在 URL 后面加上时间戳，强制浏览器跳过缓存读取最新数据
+                const resp = await fetch(githubRawUrl + '?t=' + new Date().getTime());
+        
+                if (!resp.ok) throw new Error('网络响应不正常');
                 const data = await resp.json();
                 
                 // 数据容错处理
