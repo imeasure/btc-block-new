@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Habfut 比特币情报终端</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://lib.baomitu.com/tailwindcss/3.3.3/tailwind.min.js"></script>
+    <script src="https://lib.baomitu.com/Chart.js/4.4.0/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -16,8 +15,6 @@
         .font-mono { font-family: 'Roboto Mono', monospace; }
         .pro-card { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
         .btc-gradient { background: linear-gradient(135deg, #f7931a 0%, #ffab40 100%); }
-        /* 手机端点击优化 */
-        .tap-target { min-height: 44px; min-width: 44px; }
     </style>
 </head>
 <body class="antialiased min-h-screen flex flex-col">
@@ -64,7 +61,6 @@
         <div class="container mx-auto px-4 py-6 max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-6">
             
             <div class="lg:col-span-4 flex flex-col gap-5">
-                
                 <div class="pro-card p-6 rounded-2xl bg-white border-l-[6px] border-l-orange-500 shadow-sm">
                     <div class="flex justify-between items-start mb-4">
                         <h3 class="text-slate-400 text-[10px] font-black uppercase tracking-widest">今日最大转账</h3>
@@ -116,7 +112,7 @@
                     <div class="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-center gap-3">
                         <div class="relative w-full sm:w-64">
                             <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                            <input type="text" id="searchInput" oninput="handleSearch()" placeholder="搜索高度或哈希..." class="w-full text-xs font-bold pl-8 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all">
+                            <input type="text" id="searchInput" oninput="handleSearch()" placeholder="搜索高度或哈希..." class="w-full text-xs font-bold pl-8 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg outline-none focus:border-orange-500 transition-all">
                         </div>
                         <div id="pageInfo" class="text-[10px] font-bold text-slate-400 font-mono bg-white px-3 py-1 rounded border border-slate-200">PAGE 1 / 1</div>
                     </div>
@@ -136,10 +132,11 @@
 
     <script>
         let allData = [], filteredData = [], currentPage = 1;
-        const pageSize = 15; // 每页显示数量适中
+        const pageSize = 15; 
         let whaleChartInstance = null;
         let isHistoryLoaded = false; 
 
+        // 核心修改：定义仓库信息，以便 CDN 拼装
         const REPO_OWNER = 'lovexw';
         const REPO_NAME = 'btc-block-new';
         const START_YEAR = 2026; 
@@ -171,15 +168,23 @@
 
         async function init() {
             try {
-                const url = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/data.json?t=` + Date.now();
+                // 关键点：使用 jsDelivr CDN 加速！国内也能秒开！
+                // 注意：CDN 会有几分钟缓存，这对于免费方案来说完全可以接受
+                const url = `https://cdn.jsdelivr.net/gh/${REPO_OWNER}/${REPO_NAME}@main/data.json`;
+                
                 const resp = await fetch(url);
+                if (!resp.ok) throw new Error('网络请求失败');
                 const data = await resp.json();
                 
                 updateStats(data);
                 processData(data.history);
                 render();
                 initChart(allData);
-            } catch (e) { console.error("初始化失败:", e); }
+            } catch (e) { 
+                console.error("初始化失败:", e); 
+                // 如果 CDN 失败，可以提示用户
+                document.getElementById('daily-max-txid').innerText = "数据同步中，请稍候...";
+            }
         }
 
         function updateStats(data) {
@@ -215,7 +220,10 @@
             while (true) {
                 if (currentYear < START_YEAR || (currentYear === START_YEAR && currentMonth < START_MONTH)) break;
                 const monthStr = currentMonth.toString().padStart(2, '0');
-                const fileUrl = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/archive/${currentYear}_${monthStr}.json`;
+                
+                // 历史档案也走 CDN 加速
+                const fileUrl = `https://cdn.jsdelivr.net/gh/${REPO_OWNER}/${REPO_NAME}@main/archive/${currentYear}_${monthStr}.json`;
+                
                 fetchTasks.push(fetch(fileUrl).then(res => res.ok ? res.json() : []).catch(() => []));
                 currentMonth--;
                 if (currentMonth === 0) { currentMonth = 12; currentYear--; }
@@ -358,11 +366,6 @@
             document.getElementById('pageInfo').innerText = `第 ${currentPage} / ${total || 1} 页`;
             document.getElementById('prevBtn').disabled = currentPage === 1;
             document.getElementById('nextBtn').disabled = currentPage === total || total === 0;
-            
-            // 翻页后自动回到列表顶部
-            if(window.innerWidth < 1024) {
-                 // 手机端不需要强行滚动
-            }
         }
 
         function handleSearch() {
