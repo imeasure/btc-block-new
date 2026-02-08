@@ -1,140 +1,4 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Habfut 比特币情报终端</title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <script src="https://lib.baomitu.com/Chart.js/4.4.0/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', "Microsoft YaHei", sans-serif; background-color: #f1f5f9; color: #1e293b; }
-        .font-mono { font-family: 'Roboto Mono', monospace; }
-        .pro-card { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .btc-gradient { background: linear-gradient(135deg, #f7931a 0%, #ffab40 100%); }
-        /* 列表容器高度优化 */
-        .list-container { min-height: 500px; } 
-    </style>
-</head>
-<body class="antialiased min-h-screen flex flex-col">
-
-    <div id="auth-screen" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-100/95 backdrop-blur-md transition-opacity duration-500 p-4">
-        <div class="pro-card p-8 rounded-3xl shadow-xl text-center w-full max-w-sm bg-white">
-            <div class="w-14 h-14 btc-gradient rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-orange-500/20 transform rotate-3">
-                <i class="fab fa-bitcoin text-2xl text-white"></i>
-            </div>
-            <h2 class="text-xl font-black mb-2 text-slate-800 tracking-tight">HABFUT 情报终端</h2>
-            <p class="text-slate-500 text-xs mb-6">请输入访问口令</p>
-            <input type="password" id="pw" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl mb-4 text-center outline-none focus:ring-2 focus:ring-orange-500 transition-all font-mono" placeholder="••••••••">
-            <button onclick="verify()" class="w-full btc-gradient py-3 rounded-xl font-bold text-white shadow-md active:scale-95 transition">验证并接入</button>
-            <button onclick="skipAuth()" class="mt-4 text-xs text-slate-400 font-bold hover:text-orange-500 underline decoration-dashed underline-offset-4">访客模式 &rarr;</button>
-        </div>
-    </div>
-
-    <main id="main-content" class="hidden opacity-0 transition-opacity duration-700 flex-col min-h-screen w-full pb-8">
-        
-        <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
-            <div class="container mx-auto px-4 py-3 flex justify-between items-center max-w-7xl">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 btc-gradient rounded-lg flex items-center justify-center shadow-orange-500/20 shadow-md">
-                        <i class="fab fa-bitcoin text-white text-lg"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-lg font-black text-slate-900 leading-tight">HABFUT <span class="hidden sm:inline text-orange-600">INTEL</span></h1>
-                        <div class="flex items-center text-[9px] font-bold text-slate-400 uppercase tracking-wider">
-                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5 animate-pulse"></span>
-                            <span class="sm:inline hidden">Monitor Active</span>
-                            <span class="sm:hidden inline">Online</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
-                    <div class="text-right">
-                        <p id="bj-clock" class="text-sm font-mono font-bold text-slate-700 leading-none">00:00:00</p>
-                    </div>
-                    <i class="fas fa-clock text-slate-400 text-sm"></i>
-                </div>
-            </div>
-        </header>
-
-        <div class="container mx-auto px-4 py-6 max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
-            <div class="lg:col-span-4 flex flex-col gap-5">
-                <div class="pro-card p-6 rounded-2xl bg-white border-l-[6px] border-l-orange-500 shadow-sm">
-                    <div class="flex justify-between items-start mb-4">
-                        <h3 class="text-slate-400 text-[10px] font-black uppercase tracking-widest">今日最大转账</h3>
-                        <span class="bg-orange-50 text-orange-600 text-xs px-2 py-1 rounded font-bold">24H TOP</span>
-                    </div>
-                    <div class="flex items-baseline gap-2 mb-2">
-                        <p class="text-4xl font-black text-slate-900 font-mono tracking-tighter" id="daily-max-val">0.00</p>
-                        <span class="text-xs font-bold text-slate-400">BTC</span>
-                    </div>
-                    <p class="text-[10px] font-mono text-slate-400 bg-slate-50 p-2 rounded truncate mb-4" id="daily-max-txid">数据同步中...</p>
-                    <a id="daily-max-link" href="#" target="_blank" class="block w-full text-center bg-slate-900 text-white py-3 rounded-xl text-xs font-bold hover:bg-orange-600 transition shadow-lg active:scale-95">
-                        <i class="fas fa-search-dollar mr-2"></i> 追踪资金去向
-                    </a>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="pro-card p-4 rounded-2xl bg-white">
-                        <p class="text-slate-400 text-[10px] font-bold uppercase mb-1">最新区块</p>
-                        <p class="text-xl font-black text-slate-900 font-mono" id="stat-height">-</p>
-                    </div>
-                    <div class="pro-card p-4 rounded-2xl bg-white">
-                        <p class="text-slate-400 text-[10px] font-bold uppercase mb-1">已监控</p>
-                        <p class="text-xl font-black text-orange-600 font-mono" id="stat-count">-</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="lg:col-span-8 flex flex-col gap-6">
-                
-                <div class="pro-card p-5 rounded-2xl bg-white">
-                    <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
-                        <h3 class="text-slate-900 font-bold text-sm flex items-center">
-                            <i class="fas fa-chart-area text-orange-500 mr-2"></i> 资金流向
-                        </h3>
-                        <div class="flex bg-slate-100 p-1 rounded-lg">
-                            <button onclick="updateChart('24h')" id="btn-24h" class="text-[10px] font-bold px-3 py-1 rounded bg-white shadow-sm">24H</button>
-                            <button onclick="updateChart('7d')" id="btn-7d" class="text-[10px] font-bold px-3 py-1 rounded text-slate-400">7D</button>
-                            <button onclick="loadAllHistory()" id="btn-all" class="text-[10px] font-bold px-3 py-1 rounded text-blue-500 flex items-center">
-                                <i class="fas fa-cloud-download-alt mr-1"></i> 全史
-                            </button>
-                        </div>
-                    </div>
-                    <div class="h-[220px] w-full relative">
-                        <canvas id="whaleChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="pro-card rounded-2xl bg-white overflow-hidden flex flex-col">
-                    <div class="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-center gap-3">
-                        <div class="relative w-full sm:w-64">
-                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                            <input type="text" id="searchInput" oninput="handleSearch()" placeholder="搜索高度或哈希..." class="w-full text-xs font-bold pl-8 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg outline-none focus:border-orange-500 transition-all">
-                        </div>
-                        <div id="pageInfo" class="text-[10px] font-bold text-slate-400 font-mono bg-white px-3 py-1 rounded border border-slate-200">PAGE 1 / 1</div>
-                    </div>
-
-                    <div id="block-list" class="p-4 space-y-3 bg-white list-container">
-                        </div>
-                    
-                    <div class="p-4 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                        <button onclick="prevPage()" id="prevBtn" class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50">上一页</button>
-                        <button onclick="nextPage()" id="nextBtn" class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50">下一页</button>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </main>
-
-    <script>
+<script>
         let allData = [], filteredData = [], currentPage = 1;
         const pageSize = 15; 
         let whaleChartInstance = null;
@@ -172,7 +36,7 @@
 
         async function init() {
             try {
-                // 使用国内 CDN 加速数据源 (jsdelivr)
+                // 使用国内 CDN 加速数据源
                 const url = `https://cdn.jsdelivr.net/gh/${REPO_OWNER}/${REPO_NAME}@main/data.json`;
                 
                 const resp = await fetch(url);
@@ -200,7 +64,14 @@
         }
 
         function processData(history) {
-            allData = history.sort((a, b) => b.height - a.height);
+            // 1. 去重：防止数据重叠导致图表画回头路
+            const uniqueMap = new Map();
+            history.forEach(item => uniqueMap.set(item.height, item));
+            
+            // 2. 排序：列表需要【从新到旧】
+            allData = Array.from(uniqueMap.values()).sort((a, b) => b.height - a.height);
+
+            // 3. 补全时间戳
             let nowTs = Math.floor(Date.now() / 1000);
             allData.forEach((item, index) => {
                 if(!item.time) item.time = nowTs - (index * 600);
@@ -222,7 +93,6 @@
             while (true) {
                 if (currentYear < START_YEAR || (currentYear === START_YEAR && currentMonth < START_MONTH)) break;
                 const monthStr = currentMonth.toString().padStart(2, '0');
-                // 历史档案也走 CDN
                 const fileUrl = `https://cdn.jsdelivr.net/gh/${REPO_OWNER}/${REPO_NAME}@main/archive/${currentYear}_${monthStr}.json`;
                 fetchTasks.push(fetch(fileUrl).then(res => res.ok ? res.json() : []).catch(() => []));
                 currentMonth--;
@@ -232,10 +102,13 @@
             try {
                 const results = await Promise.all(fetchTasks);
                 let archivedBlocks = results.flat();
+                
+                // 合并并去重
                 const dataMap = new Map();
                 allData.forEach(b => dataMap.set(b.height, b));
                 archivedBlocks.forEach(b => dataMap.set(b.height, b));
 
+                // 更新全量数据
                 allData = Array.from(dataMap.values()).sort((a, b) => b.height - a.height);
                 filteredData = [...allData];
 
@@ -255,15 +128,18 @@
 
         function initChart(data) {
             const ctx = document.getElementById('whaleChart').getContext('2d');
-            const slicedData = data.slice(0, 144).reverse(); 
+            
+            // 【修复关键点1】图表数据必须严格按【时间从小到大】排序，否则线条会乱跑
+            // 取最近 144 个点，然后按时间正序排列
+            const chartData = [...data].slice(0, 144).sort((a, b) => a.time - b.time);
 
             whaleChartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: slicedData.map(d => d.time * 1000), 
+                    labels: chartData.map(d => d.time * 1000), 
                     datasets: [{
                         label: '最大转账 (BTC)',
-                        data: slicedData.map(d => d.top_txs[0].value),
+                        data: chartData.map(d => d.top_txs[0].value),
                         borderColor: '#f97316',
                         backgroundColor: (context) => {
                             const ctx = context.chart.ctx;
@@ -282,12 +158,35 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: { 
+                        legend: { display: false },
+                        // 【修复关键点2】自定义 Tooltip，强制显示中文时间
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    const date = new Date(context[0].parsed.x);
+                                    return date.toLocaleString('zh-CN', { 
+                                        year: 'numeric', 
+                                        month: 'long', 
+                                        day: 'numeric', 
+                                        hour: '2-digit', 
+                                        minute: '2-digit', 
+                                        second: '2-digit',
+                                        hour12: false 
+                                    });
+                                }
+                            }
+                        }
+                    },
                     interaction: { mode: 'index', intersect: false },
                     scales: {
                         x: { 
                             type: 'time', 
-                            time: { unit: 'hour', displayFormats: { hour: 'HH:mm', day: 'MM-dd' } },
+                            time: { 
+                                unit: 'hour', 
+                                displayFormats: { hour: 'HH:mm', day: 'MM-dd' },
+                                tooltipFormat: 'yyyy-MM-dd HH:mm' // 备用格式
+                            },
                             grid: { display: false },
                             ticks: { font: { size: 9 }, color: '#cbd5e1', maxRotation: 0 }
                         },
@@ -316,7 +215,9 @@
 
             if (period === 'all' && !isHistoryLoaded) { loadAllHistory(); return; }
 
-            const newData = allData.slice(0, count).reverse();
+            // 【修复关键点3】更新数据时，也要强制按时间正序排列
+            const newData = [...allData].slice(0, count).sort((a, b) => a.time - b.time);
+
             whaleChartInstance.data.labels = newData.map(d => d.time * 1000);
             whaleChartInstance.data.datasets[0].data = newData.map(d => d.top_txs[0].value);
             whaleChartInstance.options.scales.x.time.unit = (period === '24h') ? 'hour' : 'day';
@@ -377,5 +278,3 @@
         function nextPage() { if(currentPage < Math.ceil(filteredData.length / pageSize)) { currentPage++; render(); } }
         document.getElementById('pw').addEventListener('keypress', (e) => { if (e.key === 'Enter') verify(); });
     </script>
-</body>
-</html>
