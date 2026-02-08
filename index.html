@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Habfut 比特币情报终端</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://lib.baomitu.com/Chart.js/4.4.0/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
@@ -33,6 +34,7 @@
     </div>
 
     <main id="main-content" class="hidden opacity-0 transition-opacity duration-700 flex-col min-h-screen w-full pb-8">
+        
         <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
             <div class="container mx-auto px-4 py-3 flex justify-between items-center max-w-7xl">
                 <div class="flex items-center gap-3">
@@ -58,21 +60,26 @@
         </header>
 
         <div class="container mx-auto px-4 py-6 max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
             <div class="lg:col-span-4 flex flex-col gap-5">
+                
                 <div class="pro-card p-6 rounded-2xl bg-white border-l-[6px] border-l-orange-500 shadow-sm">
                     <div class="flex justify-between items-start mb-4">
                         <h3 class="text-slate-400 text-[10px] font-black uppercase tracking-widest">今日最大转账</h3>
                         <span class="bg-orange-50 text-orange-600 text-xs px-2 py-1 rounded font-bold">24H TOP</span>
                     </div>
+                    
                     <div class="flex items-baseline gap-2 mb-2">
                         <p class="text-4xl font-black text-slate-900 font-mono tracking-tighter" id="daily-max-val">0.00</p>
                         <span class="text-xs font-bold text-slate-400">BTC</span>
                     </div>
+
                     <div class="flex items-center gap-2 mb-3">
                         <span id="daily-max-height" class="hidden text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 font-mono">
                             BLOCK # ---
                         </span>
                     </div>
+
                     <p class="text-[10px] font-mono text-slate-400 bg-slate-50 p-2 rounded truncate mb-4" id="daily-max-txid">数据同步中...</p>
                     <a id="daily-max-link" href="#" target="_blank" class="block w-full text-center bg-slate-900 text-white py-3 rounded-xl text-xs font-bold hover:bg-orange-600 transition shadow-lg active:scale-95">
                         <i class="fas fa-search-dollar mr-2"></i> 追踪资金去向
@@ -92,11 +99,10 @@
             </div>
 
             <div class="lg:col-span-8 flex flex-col gap-6">
-                
                 <div class="pro-card p-5 rounded-2xl bg-white">
                     <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
                         <h3 class="text-slate-900 font-bold text-sm flex items-center">
-                            <i class="fas fa-chart-area text-orange-500 mr-2"></i> 巨鲸资金流向 (实时)
+                            <i class="fas fa-chart-area text-orange-500 mr-2"></i> 巨鲸单笔流向趋势
                         </h3>
                         <div class="flex bg-slate-100 p-1 rounded-lg">
                             <button onclick="updateChart('24h')" id="btn-24h" class="text-[10px] font-bold px-3 py-1 rounded bg-white shadow-sm">24H</button>
@@ -106,25 +112,25 @@
                             </button>
                         </div>
                     </div>
-                    <div class="h-[220px] w-full relative">
+                    <div class="h-[200px] w-full relative">
                         <canvas id="whaleChart"></canvas>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="pro-card p-5 rounded-2xl bg-white">
-                        <h3 class="text-slate-900 font-bold text-sm mb-4 flex items-center">
-                            <i class="fas fa-hammer text-yellow-500 mr-2"></i> 矿工日产出 (BTC)
+                    <div class="pro-card p-5 rounded-2xl bg-white flex flex-col">
+                        <h3 class="text-slate-900 font-bold text-sm flex items-center mb-4">
+                            <i class="fas fa-hammer text-orange-500 mr-2"></i> 每日挖矿产出 (奖励+手续费)
                         </h3>
-                        <div class="h-[180px] w-full relative">
-                            <canvas id="miningChart"></canvas>
+                        <div class="h-[160px] w-full relative flex-1">
+                            <canvas id="rewardChart"></canvas>
                         </div>
                     </div>
-                    <div class="pro-card p-5 rounded-2xl bg-white">
-                        <h3 class="text-slate-900 font-bold text-sm mb-4 flex items-center">
-                            <i class="fas fa-exchange-alt text-blue-500 mr-2"></i> 链上日转移量 (BTC)
+                    <div class="pro-card p-5 rounded-2xl bg-white flex flex-col">
+                        <h3 class="text-slate-900 font-bold text-sm flex items-center mb-4">
+                            <i class="fas fa-globe text-blue-500 mr-2"></i> 每日全网移动总量 (BTC)
                         </h3>
-                        <div class="h-[180px] w-full relative">
+                        <div class="h-[160px] w-full relative flex-1">
                             <canvas id="volumeChart"></canvas>
                         </div>
                     </div>
@@ -155,6 +161,8 @@
         let allData = [], filteredData = [], currentPage = 1;
         const pageSize = 15; 
         let whaleChartInstance = null;
+        let rewardChartInstance = null; // 新增实例
+        let volumeChartInstance = null; // 新增实例
         let isHistoryLoaded = false; 
 
         const REPO_OWNER = 'lovexw';
@@ -166,7 +174,9 @@
             const now = new Date();
             const bjTime = new Date(now.getTime() + (now.getTimezoneOffset() + 480) * 60000);
             const el = document.getElementById('bj-clock');
-            if(el) el.innerText = bjTime.toTimeString().split(' ')[0];
+            if(el) { 
+                el.innerText = bjTime.toTimeString().split(' ')[0];
+            }
         }
         setInterval(updateClock, 1000);
         setTimeout(updateClock, 100);
@@ -198,8 +208,11 @@
                 processData(data.history);
                 render();
                 initChart(allData);
-                // 初始化新增的两个图表
-                initDailyCharts(data.daily_stats);
+                
+                // 🌟 新增：初始化每日统计图表
+                if(data.daily_stats) {
+                    initDailyCharts(data.daily_stats);
+                }
             } catch (e) { 
                 console.error("初始化失败:", e); 
                 document.getElementById('daily-max-txid').innerText = "CDN同步中，请稍后刷新...";
@@ -218,7 +231,7 @@
                 const heightEl = document.getElementById('daily-max-height');
                 if(data.daily_max.height) {
                     heightEl.innerText = 'BLOCK #' + data.daily_max.height;
-                    heightEl.classList.remove('hidden');
+                    heightEl.classList.remove('hidden'); 
                 }
             }
         }
@@ -226,7 +239,9 @@
         function processData(history) {
             const uniqueMap = new Map();
             history.forEach(item => uniqueMap.set(item.height, item));
+            
             allData = Array.from(uniqueMap.values()).sort((a, b) => b.height - a.height);
+
             let nowTs = Math.floor(Date.now() / 1000);
             allData.forEach((item, index) => {
                 if(!item.time) item.time = nowTs - (index * 600);
@@ -234,83 +249,17 @@
             filteredData = [...allData];
         }
 
-        // --- 新增：初始化每日统计图表 ---
-        function initDailyCharts(dailyStats) {
-            if (!dailyStats) return;
-
-            // 1. 数据处理：将 dailyStats 对象转为数组并排序
-            const dates = Object.keys(dailyStats).sort();
-            const miningData = dates.map(date => dailyStats[date].mining_output);
-            const volumeData = dates.map(date => dailyStats[date].on_chain_volume);
-
-            // 2. 渲染挖矿产出图
-            new Chart(document.getElementById('miningChart').getContext('2d'), {
-                type: 'bar', // 柱状图更适合展示每日总量
-                data: {
-                    labels: dates,
-                    datasets: [{
-                        label: '挖矿产出',
-                        data: miningData,
-                        backgroundColor: '#eab308', // yellow-500
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { display: false }, // 隐藏日期标签，保持简洁
-                        y: { 
-                            beginAtZero: true,
-                            grid: { display: false },
-                            ticks: { font: { size: 9 }, callback: (v) => v >= 1000 ? (v/1000).toFixed(1)+'k' : v }
-                        }
-                    }
-                }
-            });
-
-            // 3. 渲染链上转移量图
-            new Chart(document.getElementById('volumeChart').getContext('2d'), {
-                type: 'line', // 线性图适合展示波动
-                data: {
-                    labels: dates,
-                    datasets: [{
-                        label: '转移量',
-                        data: volumeData,
-                        borderColor: '#3b82f6', // blue-500
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { display: false },
-                        y: { 
-                            beginAtZero: true,
-                            grid: { display: false },
-                            ticks: { font: { size: 9 }, callback: (v) => v >= 10000 ? (v/10000).toFixed(1)+'w' : v }
-                        }
-                    }
-                }
-            });
-        }
-
-        // 历史加载、图表初始化等逻辑保持不变
         async function loadAllHistory() {
             if (isHistoryLoaded) return;
             const btn = document.getElementById('btn-all');
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>';
             btn.disabled = true;
+
             const now = new Date();
             let currentYear = now.getFullYear();
             let currentMonth = now.getMonth() + 1;
             let fetchTasks = [];
+
             while (true) {
                 if (currentYear < START_YEAR || (currentYear === START_YEAR && currentMonth < START_MONTH)) break;
                 const monthStr = currentMonth.toString().padStart(2, '0');
@@ -319,17 +268,22 @@
                 currentMonth--;
                 if (currentMonth === 0) { currentMonth = 12; currentYear--; }
             }
+
             try {
                 const results = await Promise.all(fetchTasks);
                 let archivedBlocks = results.flat();
+                
                 const dataMap = new Map();
                 allData.forEach(b => dataMap.set(b.height, b));
                 archivedBlocks.forEach(b => dataMap.set(b.height, b));
+
                 allData = Array.from(dataMap.values()).sort((a, b) => b.height - a.height);
                 filteredData = [...allData];
+
                 document.getElementById('stat-count').innerText = allData.length;
                 render();
                 updateChart('all');
+
                 btn.innerHTML = '全史';
                 btn.className = "text-[10px] font-bold px-3 py-1 rounded bg-blue-50 text-blue-600";
                 isHistoryLoaded = true;
@@ -343,6 +297,7 @@
         function initChart(data) {
             const ctx = document.getElementById('whaleChart').getContext('2d');
             const chartData = [...data].slice(0, 144).sort((a, b) => a.time - b.time);
+
             whaleChartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -400,6 +355,62 @@
             });
         }
 
+        // 🌟 新增：初始化每日统计图表
+        function initDailyCharts(dailyStats) {
+            // 将对象转换为数组并按日期排序
+            const dates = Object.keys(dailyStats).sort();
+            const rewards = dates.map(date => dailyStats[date].reward);
+            const volumes = dates.map(date => dailyStats[date].volume);
+
+            // 通用配置
+            const commonOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                interaction: { mode: 'index', intersect: false },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { size: 9 }, color: '#94a3b8' } },
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 }, color: '#94a3b8' } }
+                }
+            };
+
+            // 1. 挖矿产出图表 (使用柱状图 Bar)
+            const ctxReward = document.getElementById('rewardChart').getContext('2d');
+            rewardChartInstance = new Chart(ctxReward, {
+                type: 'bar',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: '产出 (BTC)',
+                        data: rewards,
+                        backgroundColor: '#f97316',
+                        borderRadius: 4
+                    }]
+                },
+                options: commonOptions
+            });
+
+            // 2. 全网移动总量图表 (使用折线图 Line，区分视觉)
+            const ctxVolume = document.getElementById('volumeChart').getContext('2d');
+            volumeChartInstance = new Chart(ctxVolume, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: '总交易量 (BTC)',
+                        data: volumes,
+                        borderColor: '#3b82f6', // 蓝色
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 2,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: commonOptions
+            });
+        }
+
         function updateChart(period) {
             ['24h', '7d', 'all'].forEach(p => {
                 const btn = document.getElementById(`btn-${p}`);
@@ -408,11 +419,15 @@
                 const inactiveClass = "text-[10px] font-bold px-3 py-1 rounded text-slate-400 hover:text-slate-600 transition";
                 btn.className = (p === period) ? activeClass : inactiveClass;
             });
+
             let count = allData.length;
             if (period === '24h') count = 144; 
             if (period === '7d') count = 144 * 7; 
+
             if (period === 'all' && !isHistoryLoaded) { loadAllHistory(); return; }
+
             const newData = [...allData].slice(0, count).sort((a, b) => a.time - b.time);
+
             whaleChartInstance.data.labels = newData.map(d => d.time * 1000);
             whaleChartInstance.data.datasets[0].data = newData.map(d => d.top_txs[0].value);
             whaleChartInstance.options.scales.x.time.unit = (period === '24h') ? 'hour' : 'day';
@@ -423,9 +438,11 @@
             const list = document.getElementById('block-list');
             list.innerHTML = '';
             const pageItems = filteredData.slice((currentPage-1)*pageSize, currentPage*pageSize);
+            
             pageItems.forEach(block => {
                 const card = document.createElement('div');
                 card.className = 'border border-slate-100 rounded-xl p-3 hover:border-orange-200 transition-colors bg-slate-50/50';
+                
                 let txs = block.top_txs.map((tx, i) => `
                     <div class="flex justify-between items-center py-1.5 border-b border-slate-100 last:border-0">
                         <div class="flex items-center gap-2 overflow-hidden flex-1">
@@ -441,6 +458,7 @@
                         </div>
                     </div>
                 `).join('');
+
                 card.innerHTML = `
                     <div class="flex justify-between items-center mb-2">
                         <div class="flex items-center gap-2">
