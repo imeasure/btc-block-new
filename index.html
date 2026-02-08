@@ -64,15 +64,24 @@
         <div class="container mx-auto px-4 py-6 max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-6">
             
             <div class="lg:col-span-4 flex flex-col gap-5">
+                
                 <div class="pro-card p-6 rounded-2xl bg-white border-l-[6px] border-l-orange-500 shadow-sm">
                     <div class="flex justify-between items-start mb-4">
                         <h3 class="text-slate-400 text-[10px] font-black uppercase tracking-widest">今日最大转账</h3>
                         <span class="bg-orange-50 text-orange-600 text-xs px-2 py-1 rounded font-bold">24H TOP</span>
                     </div>
+                    
                     <div class="flex items-baseline gap-2 mb-2">
                         <p class="text-4xl font-black text-slate-900 font-mono tracking-tighter" id="daily-max-val">0.00</p>
                         <span class="text-xs font-bold text-slate-400">BTC</span>
                     </div>
+
+                    <div class="flex items-center gap-2 mb-3">
+                        <span id="daily-max-height" class="hidden text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 font-mono">
+                            BLOCK # ---
+                        </span>
+                    </div>
+
                     <p class="text-[10px] font-mono text-slate-400 bg-slate-50 p-2 rounded truncate mb-4" id="daily-max-txid">数据同步中...</p>
                     <a id="daily-max-link" href="#" target="_blank" class="block w-full text-center bg-slate-900 text-white py-3 rounded-xl text-xs font-bold hover:bg-orange-600 transition shadow-lg active:scale-95">
                         <i class="fas fa-search-dollar mr-2"></i> 追踪资金去向
@@ -92,7 +101,6 @@
             </div>
 
             <div class="lg:col-span-8 flex flex-col gap-6">
-                
                 <div class="pro-card p-5 rounded-2xl bg-white">
                     <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
                         <h3 class="text-slate-900 font-bold text-sm flex items-center">
@@ -128,7 +136,6 @@
                         <button onclick="nextPage()" id="nextBtn" class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50">下一页</button>
                     </div>
                 </div>
-
             </div>
         </div>
     </main>
@@ -145,17 +152,16 @@
         const START_YEAR = 2026; 
         const START_MONTH = 2; 
 
-        // 1. 时钟更新逻辑
+        // 时钟更新逻辑
         function updateClock() {
             const now = new Date();
             const bjTime = new Date(now.getTime() + (now.getTimezoneOffset() + 480) * 60000);
             const el = document.getElementById('bj-clock');
-            if(el) { // 加个判断，防止报错
+            if(el) { 
                 el.innerText = bjTime.toTimeString().split(' ')[0];
             }
         }
         setInterval(updateClock, 1000);
-        // 延迟一点执行，确保HTML加载完毕
         setTimeout(updateClock, 100);
 
         function verify() {
@@ -176,7 +182,6 @@
 
         async function init() {
             try {
-                // 使用国内 CDN 加速数据源
                 const url = `https://cdn.jsdelivr.net/gh/${REPO_OWNER}/${REPO_NAME}@main/data.json`;
                 
                 const resp = await fetch(url);
@@ -196,21 +201,27 @@
         function updateStats(data) {
             document.getElementById('stat-height').innerText = data.last_height || '-';
             document.getElementById('stat-count').innerText = data.history ? data.history.length : '-'; 
+            
             if(data.daily_max && data.daily_max.value > 0) {
                 document.getElementById('daily-max-val').innerText = data.daily_max.value.toFixed(2);
                 document.getElementById('daily-max-txid').innerText = data.daily_max.txid;
                 document.getElementById('daily-max-link').href = 'https://mempool.space/zh/tx/' + data.daily_max.txid;
+                
+                // 新增：显示区块高度
+                const heightEl = document.getElementById('daily-max-height');
+                if(data.daily_max.height) {
+                    heightEl.innerText = 'BLOCK #' + data.daily_max.height;
+                    heightEl.classList.remove('hidden'); // 显示标签
+                }
             }
         }
 
         function processData(history) {
-            // 去重 + 倒序排列（用于列表显示）
             const uniqueMap = new Map();
             history.forEach(item => uniqueMap.set(item.height, item));
             
             allData = Array.from(uniqueMap.values()).sort((a, b) => b.height - a.height);
 
-            // 补全时间戳
             let nowTs = Math.floor(Date.now() / 1000);
             allData.forEach((item, index) => {
                 if(!item.time) item.time = nowTs - (index * 600);
@@ -266,7 +277,7 @@
         function initChart(data) {
             const ctx = document.getElementById('whaleChart').getContext('2d');
             
-            // 核心修复：图表数据必须按【时间正序】排列，否则曲线会乱
+            // 按时间正序排列数据
             const chartData = [...data].slice(0, 144).sort((a, b) => a.time - b.time);
 
             whaleChartInstance = new Chart(ctx, {
@@ -296,7 +307,6 @@
                     maintainAspectRatio: false,
                     plugins: { 
                         legend: { display: false },
-                        // 核心修复：Tooltip 显示中文时间
                         tooltip: {
                             callbacks: {
                                 title: function(context) {
@@ -345,7 +355,6 @@
 
             if (period === 'all' && !isHistoryLoaded) { loadAllHistory(); return; }
 
-            // 同样需要正序排列
             const newData = [...allData].slice(0, count).sort((a, b) => a.time - b.time);
 
             whaleChartInstance.data.labels = newData.map(d => d.time * 1000);
