@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Habfut 比特币情报终端</title>
-    <script src="https://lib.baomitu.com/tailwindcss/3.3.3/tailwind.min.js"></script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
     <script src="https://lib.baomitu.com/Chart.js/4.4.0/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     
@@ -15,6 +17,8 @@
         .font-mono { font-family: 'Roboto Mono', monospace; }
         .pro-card { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
         .btc-gradient { background: linear-gradient(135deg, #f7931a 0%, #ffab40 100%); }
+        /* 列表容器高度优化 */
+        .list-container { min-height: 500px; } 
     </style>
 </head>
 <body class="antialiased min-h-screen flex flex-col">
@@ -70,7 +74,7 @@
                         <p class="text-4xl font-black text-slate-900 font-mono tracking-tighter" id="daily-max-val">0.00</p>
                         <span class="text-xs font-bold text-slate-400">BTC</span>
                     </div>
-                    <p class="text-[10px] font-mono text-slate-400 bg-slate-50 p-2 rounded truncate mb-4" id="daily-max-txid">等待数据同步...</p>
+                    <p class="text-[10px] font-mono text-slate-400 bg-slate-50 p-2 rounded truncate mb-4" id="daily-max-txid">数据同步中...</p>
                     <a id="daily-max-link" href="#" target="_blank" class="block w-full text-center bg-slate-900 text-white py-3 rounded-xl text-xs font-bold hover:bg-orange-600 transition shadow-lg active:scale-95">
                         <i class="fas fa-search-dollar mr-2"></i> 追踪资金去向
                     </a>
@@ -117,7 +121,7 @@
                         <div id="pageInfo" class="text-[10px] font-bold text-slate-400 font-mono bg-white px-3 py-1 rounded border border-slate-200">PAGE 1 / 1</div>
                     </div>
 
-                    <div id="block-list" class="p-4 space-y-3 bg-white min-h-[300px]">
+                    <div id="block-list" class="p-4 space-y-3 bg-white list-container">
                         </div>
                     
                     <div class="p-4 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center">
@@ -136,7 +140,7 @@
         let whaleChartInstance = null;
         let isHistoryLoaded = false; 
 
-        // 核心修改：定义仓库信息，以便 CDN 拼装
+        // 仓库配置
         const REPO_OWNER = 'lovexw';
         const REPO_NAME = 'btc-block-new';
         const START_YEAR = 2026; 
@@ -168,8 +172,7 @@
 
         async function init() {
             try {
-                // 关键点：使用 jsDelivr CDN 加速！国内也能秒开！
-                // 注意：CDN 会有几分钟缓存，这对于免费方案来说完全可以接受
+                // 使用国内 CDN 加速数据源 (jsdelivr)
                 const url = `https://cdn.jsdelivr.net/gh/${REPO_OWNER}/${REPO_NAME}@main/data.json`;
                 
                 const resp = await fetch(url);
@@ -182,8 +185,7 @@
                 initChart(allData);
             } catch (e) { 
                 console.error("初始化失败:", e); 
-                // 如果 CDN 失败，可以提示用户
-                document.getElementById('daily-max-txid').innerText = "数据同步中，请稍候...";
+                document.getElementById('daily-max-txid').innerText = "CDN同步中，请稍后刷新...";
             }
         }
 
@@ -220,10 +222,8 @@
             while (true) {
                 if (currentYear < START_YEAR || (currentYear === START_YEAR && currentMonth < START_MONTH)) break;
                 const monthStr = currentMonth.toString().padStart(2, '0');
-                
-                // 历史档案也走 CDN 加速
+                // 历史档案也走 CDN
                 const fileUrl = `https://cdn.jsdelivr.net/gh/${REPO_OWNER}/${REPO_NAME}@main/archive/${currentYear}_${monthStr}.json`;
-                
                 fetchTasks.push(fetch(fileUrl).then(res => res.ok ? res.json() : []).catch(() => []));
                 currentMonth--;
                 if (currentMonth === 0) { currentMonth = 12; currentYear--; }
