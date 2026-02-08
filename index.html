@@ -68,18 +68,15 @@
                         <h3 class="text-slate-400 text-[10px] font-black uppercase tracking-widest">今日最大转账</h3>
                         <span class="bg-orange-50 text-orange-600 text-xs px-2 py-1 rounded font-bold">24H TOP</span>
                     </div>
-                    
                     <div class="flex items-baseline gap-2 mb-2">
                         <p class="text-4xl font-black text-slate-900 font-mono tracking-tighter" id="daily-max-val">0.00</p>
                         <span class="text-xs font-bold text-slate-400">BTC</span>
                     </div>
-
                     <div class="flex items-center gap-2 mb-3">
                         <span id="daily-max-height" class="hidden text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 font-mono">
                             BLOCK # ---
                         </span>
                     </div>
-
                     <p class="text-[10px] font-mono text-slate-400 bg-slate-50 p-2 rounded truncate mb-4" id="daily-max-txid">数据同步中...</p>
                     <a id="daily-max-link" href="#" target="_blank" class="block w-full text-center bg-slate-900 text-white py-3 rounded-xl text-xs font-bold hover:bg-orange-600 transition shadow-lg active:scale-95">
                         <i class="fas fa-search-dollar mr-2"></i> 追踪资金去向
@@ -96,9 +93,20 @@
                         <p class="text-xl font-black text-orange-600 font-mono" id="stat-count">-</p>
                     </div>
                 </div>
+
+                <div class="pro-card p-5 rounded-2xl bg-white flex flex-col">
+                    <h3 class="text-slate-900 font-bold text-sm flex items-center mb-4">
+                        <i class="fas fa-hammer text-orange-500 mr-2"></i> 每日挖矿产出
+                    </h3>
+                    <div class="h-[200px] w-full relative flex-1">
+                        <canvas id="rewardChart"></canvas>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-2 text-center">包含区块奖励 (3.125) + 链上手续费</p>
+                </div>
             </div>
 
             <div class="lg:col-span-8 flex flex-col gap-6">
+                
                 <div class="pro-card p-5 rounded-2xl bg-white">
                     <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
                         <h3 class="text-slate-900 font-bold text-sm flex items-center">
@@ -112,27 +120,17 @@
                             </button>
                         </div>
                     </div>
-                    <div class="h-[200px] w-full relative">
+                    <div class="h-[220px] w-full relative">
                         <canvas id="whaleChart"></canvas>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="pro-card p-5 rounded-2xl bg-white flex flex-col">
-                        <h3 class="text-slate-900 font-bold text-sm flex items-center mb-4">
-                            <i class="fas fa-hammer text-orange-500 mr-2"></i> 每日挖矿产出 (奖励+手续费)
-                        </h3>
-                        <div class="h-[160px] w-full relative flex-1">
-                            <canvas id="rewardChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="pro-card p-5 rounded-2xl bg-white flex flex-col">
-                        <h3 class="text-slate-900 font-bold text-sm flex items-center mb-4">
-                            <i class="fas fa-globe text-blue-500 mr-2"></i> 每日全网移动总量 (BTC)
-                        </h3>
-                        <div class="h-[160px] w-full relative flex-1">
-                            <canvas id="volumeChart"></canvas>
-                        </div>
+                <div class="pro-card p-5 rounded-2xl bg-white">
+                    <h3 class="text-slate-900 font-bold text-sm flex items-center mb-4">
+                        <i class="fas fa-globe text-blue-500 mr-2"></i> 每日全网移动总量趋势 (BTC)
+                    </h3>
+                    <div class="h-[220px] w-full relative">
+                        <canvas id="volumeChart"></canvas>
                     </div>
                 </div>
 
@@ -161,8 +159,8 @@
         let allData = [], filteredData = [], currentPage = 1;
         const pageSize = 15; 
         let whaleChartInstance = null;
-        let rewardChartInstance = null; // 新增实例
-        let volumeChartInstance = null; // 新增实例
+        let rewardChartInstance = null;
+        let volumeChartInstance = null;
         let isHistoryLoaded = false; 
 
         const REPO_OWNER = 'lovexw';
@@ -209,7 +207,6 @@
                 render();
                 initChart(allData);
                 
-                // 🌟 新增：初始化每日统计图表
                 if(data.daily_stats) {
                     initDailyCharts(data.daily_stats);
                 }
@@ -239,7 +236,6 @@
         function processData(history) {
             const uniqueMap = new Map();
             history.forEach(item => uniqueMap.set(item.height, item));
-            
             allData = Array.from(uniqueMap.values()).sort((a, b) => b.height - a.height);
 
             let nowTs = Math.floor(Date.now() / 1000);
@@ -355,14 +351,11 @@
             });
         }
 
-        // 🌟 新增：初始化每日统计图表
         function initDailyCharts(dailyStats) {
-            // 将对象转换为数组并按日期排序
             const dates = Object.keys(dailyStats).sort();
             const rewards = dates.map(date => dailyStats[date].reward);
             const volumes = dates.map(date => dailyStats[date].volume);
 
-            // 通用配置
             const commonOptions = {
                 responsive: true,
                 maintainAspectRatio: false,
@@ -374,7 +367,7 @@
                 }
             };
 
-            // 1. 挖矿产出图表 (使用柱状图 Bar)
+            // 1. 挖矿产出图表 (侧边栏)
             const ctxReward = document.getElementById('rewardChart').getContext('2d');
             rewardChartInstance = new Chart(ctxReward, {
                 type: 'bar',
@@ -390,7 +383,7 @@
                 options: commonOptions
             });
 
-            // 2. 全网移动总量图表 (使用折线图 Line，区分视觉)
+            // 2. 全网移动总量图表 (全宽)
             const ctxVolume = document.getElementById('volumeChart').getContext('2d');
             volumeChartInstance = new Chart(ctxVolume, {
                 type: 'line',
@@ -399,8 +392,14 @@
                     datasets: [{
                         label: '总交易量 (BTC)',
                         data: volumes,
-                        borderColor: '#3b82f6', // 蓝色
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderColor: '#3b82f6',
+                        backgroundColor: (context) => {
+                            const ctx = context.chart.ctx;
+                            const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+                            gradient.addColorStop(0, 'rgba(59, 130, 246, 0.2)');
+                            gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+                            return gradient;
+                        },
                         borderWidth: 2,
                         pointRadius: 2,
                         fill: true,
