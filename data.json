@@ -1,5 +1,5 @@
 {
-    "last_height": 935546,
+    "last_height": 935547,
     "history": [
         {
             "height": 935377,
@@ -2942,6 +2942,24 @@
                     "value": 726.05088619
                 }
             ]
+        },
+        {
+            "height": 935547,
+            "time": 1770540612,
+            "top_txs": [
+                {
+                    "txid": "22c22b9eea5310791e7cdeb337c65c69749cdcba539dfc31d4803d6f6407f851",
+                    "value": 6679.25181495
+                },
+                {
+                    "txid": "db22b9f2a3f97d01b4aa50395c04f194bbc8ce47a13affae84cb44bbaa28a0d5",
+                    "value": 6592.40301716
+                },
+                {
+                    "txid": "602f4c6f66cdb0e2ba9bfcff7644d720e9659052ecd722de0457462bf1b5638f",
+                    "value": 888.78486804
+                }
+            ]
         }
     ],
     "daily_max": {
@@ -2952,8 +2970,8 @@
     "last_date": "2026-02-08",
     "daily_stats": {
         "2026-02-08": {
-            "reward": 131.73394061,
-            "volume": 209167.82782197944
+            "reward": 134.90263002999998,
+            "volume": 235300.59696020943
         }
     }
 }
