@@ -1,7 +1,4 @@
 
----
-
-```markdown
 # 🟠 Habfut Bitcoin Intel / 比特币情报终端
 
 > **A real-time, serverless Bitcoin blockchain monitor powered by GitHub Actions.**
