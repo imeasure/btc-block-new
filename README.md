@@ -1,78 +1,118 @@
-# ₿ Habfut BTC Professional Intelligence 终端
-
-> **一款基于 GitHub Actions + Cloudflare Pages 的轻量级、自动化比特币大额交易监控系统。**
 
 ---
 
-## 📖 项目简介
+```markdown
+# 🟠 Habfut Bitcoin Intel / 比特币情报终端
 
-本项目旨在为用户提供一个无需维护服务器、零成本运行的比特币区块情报站。通过自动化脚本每 30 分钟抓取最新区块数据，分析并提取每个区块中金额最高的 **前三笔转账**，并以专业金融终端的风格进行展示。
+> **A real-time, serverless Bitcoin blockchain monitor powered by GitHub Actions.**
+> **一个基于 GitHub Actions 的实时、无服务器比特币链上情报监控终端。**
 
-### ✨ 核心特性
+![Habfut Intel Screenshot](https://raw.githubusercontent.com/lovexw/btc-block-new/main/screenshot.png)
+*(建议上传一张你刚刚截的最终效果图，命名为 screenshot.png 放在仓库根目录)*
 
-* **零成本运行**：利用 GitHub Actions 进行数据处理，Cloudflare Pages 托管前端。
-* **断点续传**：智能识别 `data.json` 中的最后记录高度，确保数据连续不遗漏。
-* **双屏响应式设计**：桌面端采用专业双栏布局，移动端完美适配单屏滑动。
-* **安全访问**：集成前端口令校验系统（默认口令：`habfut.com`）。
-* **专业视觉**：采用金融级浅色调 UI，支持实时搜索与分页浏览。
+## ✨ Features / 核心功能
 
----
-
-## 🛠️ 技术架构
-
-1. **数据层 (`monitor.py`)**: Python 脚本通过 Blockchain.info API 获取区块数据。
-2. **工作流 (`.github/workflows/monitor.yml`)**: 每 30 分钟触发一次，更新 `data.json` 并推回仓库。
-3. **展示层 (`index.html`)**: 基于 Tailwind CSS 驱动的高级前端页面。
-4. **部署层**: Cloudflare Pages 实时同步仓库代码并分发全球。
-
----
-
-## 🚀 快速部署指南
-
-### 1. 仓库准备
-
-* 在 GitHub 上创建一个新仓库（建议公开）。
-* 上传 `monitor.py`、`index.html` 以及这个 `README.md`。
-
-### 2. 配置权限 (关键)
-
-为了让 GitHub Actions 能够更新数据，请务必开启写入权限：
-
-1. 进入仓库的 **Settings** -> **Actions** -> **General**。
-2. 滚动到 **Workflow permissions**。
-3. 勾选 **Read and write permissions** 并点击 **Save**。
-
-### 3. 连接 Cloudflare Pages
-
-1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com/)。
-2. 选择 **Workers & Pages** -> **Create application** -> **Pages** -> **Connect to Git**。
-3. 选择你的 GitHub 仓库。
-4. **Build settings** 均保持默认（因为是纯静态页面），点击 **Save and Deploy**。
+* **🔍 Real-time Monitoring**: Automatically fetches the latest blocks via GitHub Actions (CRON).
+    * **实时监控**：利用 GitHub Actions 定时任务，自动抓取最新区块数据。
+* **🐋 Whale Alert**: Tracks the largest transaction in every block and daily top transfers.
+    * **巨鲸追踪**：自动锁定每个区块内的最大单笔转账，并统计今日“转账之王”。
+* **📊 Visual Trends**: Professional charts for transaction volume, mining rewards, and whale movements.
+    * **可视化趋势**：内置专业图表，展示资金流向、每日挖矿产出及全网交易总量。
+* **⚡ Zero Cost & Fast**: Hosted on GitHub Pages, accelerated by jsDelivr CDN for global access.
+    * **零成本秒开**：完全托管在 GitHub，配合 CDN 加速，国内访问也丝滑流畅。
+* **📱 Responsive Design**: Perfectly adapted for both desktop and mobile devices.
+    * **全端适配**：完美支持手机端和电脑端，随时随地查看链上情报。
+* **🗄️ Auto Archiving**: Automatically archives historical data for long-term analysis.
+    * **自动归档**：历史数据自动按月归档，支持查看长周期的历史趋势。
 
 ---
 
-## 📂 文件说明
+## 🚀 Quick Start / 快速部署
 
-| 文件名 | 描述 |
-| --- | --- |
-| `monitor.py` | 核心抓取脚本，负责 API 调用、数据过滤与断点逻辑。 |
-| `index.html` | 前端展示页面，包含口令校验、搜索、分页及响应式布局。 |
-| `data.json` | 自动生成的数据文件，存储最近 100 个区块的情报。 |
-| `.github/workflows/monitor.yml` | 自动化定时任务配置文件。 |
+### 1. Fork this Repository (Fork 本仓库)
+Click the `Fork` button in the top right corner to copy this project to your own GitHub account.
+点击右上角的 `Fork` 按钮，将本项目复制到你自己的 GitHub 账号下。
+
+### 2. Enable GitHub Actions (开启自动运行)
+1.  Go to the **Actions** tab in your forked repository.
+    进入你仓库的 **Actions** 栏目。
+2.  Click the green button **"I understand my workflows, go ahead and enable them"**.
+    点击绿色按钮开启 Workflow。
+3.  (Optional) You can manually trigger the "Update Bitcoin Data" workflow to test it immediately.
+    (可选) 你可以手动运行一次 "Update Bitcoin Data" 来测试效果。
+
+### 3. Update Configuration (修改配置)
+Edit `index.html` file, find the following lines and change them to your username:
+编辑 `index.html` 文件，找到以下几行，修改为你自己的 GitHub 用户名和仓库名：
+
+```javascript
+// Change these to your own repo info
+const REPO_OWNER = 'your-github-username'; // 你的 GitHub 用户名
+const REPO_NAME = 'your-repo-name';        // 你的仓库名 (例如 btc-monitor)
+
+```
+
+### 4. Enable GitHub Pages (开启网页托管)
+
+1. Go to **Settings** -> **Pages**.
+进入 **Settings** -> **Pages**。
+2. Select **Source** as `Deploy from a branch`.
+选择来源为 `Deploy from a branch`。
+3. Select **Branch** as `main` and folder `/ (root)`.
+选择分支为 `main`，文件夹选 `/ (root)`。
+4. Click **Save**. You will get your website URL shortly!
+点击保存。稍等片刻，你就能获得你的专属情报站链接了！
 
 ---
 
-## 🔒 安全说明
+## 🛠️ How it Works / 工作原理
 
-* **访问口令**：默认访问码为 `habfut.com`。如需修改，请编辑 `index.html` 中 `verify()` 函数内的逻辑。
-* **私密性**：如果您希望数据完全私有，可将仓库设为 **Private**。Cloudflare Pages 依然可以读取私有仓库进行部署。
+1. **Backend (Python)**:
+* The `monitor.py` script runs every 5-10 minutes (triggered by GitHub Actions).
+* It fetches data from `blockchain.info` API.
+* It updates `data.json` (hot data) and archives old data into `archive/` folder (cold data).
+* It calculates daily stats (mining rewards, total volume).
+* Finally, it commits and pushes the changes back to the repo.
+
+
+2. **Frontend (HTML/JS)**:
+* The user visits the GitHub Pages website.
+* The browser fetches data from `cdn.jsdelivr.net` (mirrored from your repo) for fast access.
+* `Chart.js` renders the beautiful charts based on the data.
+
+
 
 ---
 
-## ⚖️ 免责声明
+## 📂 Project Structure / 目录结构
 
-本工具仅用于区块链技术研究与数据分析展示，所提供的数据均来自公共 API。请勿用于任何非法用途，作者不对因使用本工具造成的任何直接或间接损失负责。
+```text
+.
+├── .github/workflows/
+│   └── update.yml      # GitHub Actions configuration (定时任务配置)
+├── archive/            # Historical data storage (历史档案存储)
+│   └── 2026_02.json
+├── monitor.py          # Python script for data fetching (核心抓取脚本)
+├── index.html          # Frontend dashboard (前端展示页面)
+├── data.json           # Latest data cache (最新热数据)
+└── README.md           # Documentation (说明文档)
+
+```
 
 ---
 
-> **Habfut** —— 让比特币数据触手可及。
+## 🤝 Contributing / 贡献
+
+We welcome contributions! If you have ideas for new charts or features, feel free to open an issue or submit a pull request.
+欢迎提交代码！如果你有新的图表创意或功能建议，欢迎提交 Issue 或 PR。
+
+## 📄 License
+
+This project is open-sourced under the MIT License.
+本项目基于 MIT 协议开源，完全免费。
+
+---
+
+<p align="center">
+Made with ❤️ by Habfut
+</p>
