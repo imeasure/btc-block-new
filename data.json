@@ -1,5 +1,5 @@
 {
-    "last_height": 935626,
+    "last_height": 935628,
     "history": [
         {
             "height": 935377,
@@ -4364,12 +4364,48 @@
                     "value": 227.72398559
                 }
             ]
+        },
+        {
+            "height": 935627,
+            "time": 1770579472,
+            "top_txs": [
+                {
+                    "txid": "7c6cf9bf3070881eac5055e0e8b97d06501914877a61a65dc12ecc364cd3f3ce",
+                    "value": 6677.71864832
+                },
+                {
+                    "txid": "9034d30b220c9fac172faad896d8d64d78b23b25e2eb06f8ee14bbb70a0a9d2a",
+                    "value": 488.14095229
+                },
+                {
+                    "txid": "64bc83874e9bd3deb151b7f86ddd6e72a36efd4e49df6960279a3cc7572f5b4c",
+                    "value": 142.87461881
+                }
+            ]
+        },
+        {
+            "height": 935628,
+            "time": 1770579609,
+            "top_txs": [
+                {
+                    "txid": "9860a929d04db09f6d4f7ad8dd88e5e835e867e458b8c8a1a2992130d8674932",
+                    "value": 227.61888633
+                },
+                {
+                    "txid": "44e1f9f1eed8839be8e093d4e1bbf35d1ed57c33fc0a4dd78ee09e7f5cf53467",
+                    "value": 165.57847946
+                },
+                {
+                    "txid": "756e1775ff525233260fd5e834218da48b73ecb9cf4b45671077a567ab084815",
+                    "value": 123.63780266
+                }
+            ]
         }
     ],
     "daily_max": {
-        "value": 6610.53949438,
-        "txid": "8a48967fed4511994e35d538053e4d65a0efbee4f9b86438c6127810a0d5a3ed",
-        "height": 935626
+        "value": 6677.71864832,
+        "txid": "7c6cf9bf3070881eac5055e0e8b97d06501914877a61a65dc12ecc364cd3f3ce",
+        "height": 935627
     },
     "last_date": "2026-02-09",
     "daily_stats": {
@@ -4378,8 +4414,8 @@
             "volume": 553482.886559869
         },
         "2026-02-09": {
-            "reward": 97.24337122999998,
-            "volume": 80842.04271254991
+            "reward": 103.53423335999997,
+            "volume": 93100.12931655995
         }
     }
 }
