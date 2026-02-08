@@ -6,8 +6,10 @@
     <title>Habfut 比特币情报终端</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <script src="https://lib.baomitu.com/Chart.js/4.4.0/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
     <style>
@@ -163,6 +165,7 @@
         let volumeChartInstance = null;
         let isHistoryLoaded = false; 
 
+        // 仓库配置
         const REPO_OWNER = 'lovexw';
         const REPO_NAME = 'btc-block-new';
         const START_YEAR = 2026; 
@@ -197,6 +200,7 @@
 
         async function init() {
             try {
+                // 使用 jsDelivr CDN 确保数据更新且国内可访问
                 const url = `https://cdn.jsdelivr.net/gh/${REPO_OWNER}/${REPO_NAME}@main/data.json`;
                 const resp = await fetch(url);
                 if (!resp.ok) throw new Error('网络请求失败');
@@ -207,6 +211,7 @@
                 render();
                 initChart(allData);
                 
+                // 初始化新增的两个宏观图表
                 if(data.daily_stats) {
                     initDailyCharts(data.daily_stats);
                 }
@@ -236,6 +241,7 @@
         function processData(history) {
             const uniqueMap = new Map();
             history.forEach(item => uniqueMap.set(item.height, item));
+            
             allData = Array.from(uniqueMap.values()).sort((a, b) => b.height - a.height);
 
             let nowTs = Math.floor(Date.now() / 1000);
@@ -351,6 +357,7 @@
             });
         }
 
+        // 初始化每日图表
         function initDailyCharts(dailyStats) {
             const dates = Object.keys(dailyStats).sort();
             const rewards = dates.map(date => dailyStats[date].reward);
