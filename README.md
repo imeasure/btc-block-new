@@ -5,7 +5,7 @@
 > **一个基于 GitHub Actions 的实时、无服务器比特币链上情报监控终端。**
 
 ![Habfut Intel Screenshot](https://raw.githubusercontent.com/lovexw/btc-block-new/main/screenshot.png)
-*(建议上传一张你刚刚截的最终效果图，命名为 screenshot.png 放在仓库根目录)*
+
 
 ## ✨ Features / 核心功能
 
