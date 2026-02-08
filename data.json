@@ -1,5 +1,5 @@
 {
-    "last_height": 935557,
+    "last_height": 935560,
     "history": [
         {
             "height": 935377,
@@ -3140,18 +3140,54 @@
                     "value": 97.70807968
                 }
             ]
+        },
+        {
+            "height": 935558,
+            "time": 1770547075,
+            "top_txs": [
+                {
+                    "txid": "384ebab41ff0eaaf9b1deacef0cd4f6eaabc3610d0a9bdf8608a048431d5f929",
+                    "value": 20300.113523
+                },
+                {
+                    "txid": "86e83c587127807285afc42fede11fcd0e946d88d83feba5498030384cb11214",
+                    "value": 6828.59035382
+                },
+                {
+                    "txid": "3219eb3ccee578d2038ac9f4d1bfe9d0b8d714a28c31635406dd40a6c7a20c47",
+                    "value": 6554.05431458
+                }
+            ]
+        },
+        {
+            "height": 935559,
+            "time": 1770547685,
+            "top_txs": [
+                {
+                    "txid": "971adb333c40676058fffa7f6a1b60c23673f1d663a247fef4a8f79060eb60ed",
+                    "value": 6493.95430682
+                },
+                {
+                    "txid": "737b509cc473e162fd462308733fbfa58f0b69acf30d4773a6c7afd34c986e44",
+                    "value": 2960.86263206
+                },
+                {
+                    "txid": "06f534e9f4d19ab8eec6c654dc11878cbffe5218d3dccabef6aaba851a2e4e92",
+                    "value": 652.27374413
+                }
+            ]
         }
     ],
     "daily_max": {
-        "value": 20298.43056636,
-        "txid": "422fef59d0fabdadba19c12d8792f45c69d554a6f0d338f02a962597b81f927c",
-        "height": 935522
+        "value": 20300.113523,
+        "txid": "384ebab41ff0eaaf9b1deacef0cd4f6eaabc3610d0a9bdf8608a048431d5f929",
+        "height": 935558
     },
     "last_date": "2026-02-08",
     "daily_stats": {
         "2026-02-08": {
-            "reward": 166.27328541999998,
-            "volume": 301365.06176140916
+            "reward": 172.57692778999998,
+            "volume": 359471.80774732935
         }
     }
 }
