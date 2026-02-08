@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Habfut 比特币情报终端</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -12,144 +12,134 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', "Microsoft YaHei", sans-serif; background-color: #f8fafc; color: #1e293b; }
+        body { font-family: 'Inter', "Microsoft YaHei", sans-serif; background-color: #f1f5f9; color: #1e293b; }
         .font-mono { font-family: 'Roboto Mono', monospace; }
-        .pro-card { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05); }
+        .pro-card { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
         .btc-gradient { background: linear-gradient(135deg, #f7931a 0%, #ffab40 100%); }
-        .hover-card:hover { border-color: #f7931a; box-shadow: 0 12px 20px -5px rgba(0,0,0,0.1); transform: translateY(-2px); }
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-        /* 2. 布局修复：图表容器高度固定，不让它挤压列表 */
-        .chart-wrapper { height: 260px; width: 100%; position: relative; }
+        /* 手机端点击优化 */
+        .tap-target { min-height: 44px; min-width: 44px; }
     </style>
 </head>
-<body class="antialiased overflow-hidden h-screen flex flex-col">
+<body class="antialiased min-h-screen flex flex-col">
 
-    <div id="auth-screen" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-100/95 backdrop-blur-md transition-opacity duration-500">
-        <div class="pro-card p-10 rounded-3xl shadow-2xl text-center max-w-sm w-full mx-4 relative">
-            <div class="w-16 h-16 btc-gradient rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-orange-500/20 transform rotate-3">
-                <i class="fab fa-bitcoin text-3xl text-white"></i>
+    <div id="auth-screen" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-100/95 backdrop-blur-md transition-opacity duration-500 p-4">
+        <div class="pro-card p-8 rounded-3xl shadow-xl text-center w-full max-w-sm bg-white">
+            <div class="w-14 h-14 btc-gradient rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-orange-500/20 transform rotate-3">
+                <i class="fab fa-bitcoin text-2xl text-white"></i>
             </div>
-            <h2 class="text-2xl font-black mb-2 text-slate-800 tracking-tight">HABFUT 情报终端</h2>
-            <p class="text-slate-500 text-sm mb-6">核心数据流受控，请验证身份</p>
-            <input type="password" id="pw" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl mb-4 text-center outline-none focus:ring-4 focus:ring-orange-100 transition-all font-mono" placeholder="请输入访问口令">
-            <button onclick="verify()" class="w-full btc-gradient py-3.5 rounded-xl font-black text-white shadow-lg shadow-orange-500/30 transition hover:brightness-110 active:scale-95 mb-4">验证并接入</button>
-            <button onclick="skipAuth()" class="text-xs text-slate-400 font-bold hover:text-orange-500 transition underline decoration-dashed underline-offset-4">暂无口令？点击以访客模式浏览 &rarr;</button>
+            <h2 class="text-xl font-black mb-2 text-slate-800 tracking-tight">HABFUT 情报终端</h2>
+            <p class="text-slate-500 text-xs mb-6">请输入访问口令</p>
+            <input type="password" id="pw" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl mb-4 text-center outline-none focus:ring-2 focus:ring-orange-500 transition-all font-mono" placeholder="••••••••">
+            <button onclick="verify()" class="w-full btc-gradient py-3 rounded-xl font-bold text-white shadow-md active:scale-95 transition">验证并接入</button>
+            <button onclick="skipAuth()" class="mt-4 text-xs text-slate-400 font-bold hover:text-orange-500 underline decoration-dashed underline-offset-4">访客模式 &rarr;</button>
         </div>
     </div>
 
-    <main id="main-content" class="hidden opacity-0 transition-opacity duration-700 flex-col h-full w-full">
-        <div class="container mx-auto px-4 py-4 flex flex-col h-full max-w-[1600px]"> <header class="flex-none flex flex-col md:flex-row justify-between items-center mb-4 gap-4 bg-white p-4 rounded-3xl pro-card">
-                <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 btc-gradient rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
-                        <i class="fab fa-bitcoin text-white text-xl"></i>
+    <main id="main-content" class="hidden opacity-0 transition-opacity duration-700 flex-col min-h-screen w-full pb-8">
+        
+        <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
+            <div class="container mx-auto px-4 py-3 flex justify-between items-center max-w-7xl">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 btc-gradient rounded-lg flex items-center justify-center shadow-orange-500/20 shadow-md">
+                        <i class="fab fa-bitcoin text-white text-lg"></i>
                     </div>
                     <div>
-                        <h1 class="text-xl font-black text-slate-900 tracking-tighter">HABFUT <span class="text-orange-600">情报中心</span></h1>
-                        <div class="flex items-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                            <span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span> 全天候区块链监控系统
+                        <h1 class="text-lg font-black text-slate-900 leading-tight">HABFUT <span class="hidden sm:inline text-orange-600">INTEL</span></h1>
+                        <div class="flex items-center text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5 animate-pulse"></span>
+                            <span class="sm:inline hidden">Monitor Active</span>
+                            <span class="sm:hidden inline">Online</span>
                         </div>
                     </div>
                 </div>
-                <div class="bg-slate-900 text-white px-5 py-2 rounded-2xl flex items-center gap-4 shadow-xl">
-                    <div class="text-right border-r border-slate-700 pr-4">
-                        <p class="text-[9px] text-slate-500 font-bold leading-none mb-1">北京时间 (UTC+8)</p>
-                        <p id="bj-clock" class="text-lg font-mono font-bold leading-none tracking-wider text-orange-400">00:00:00</p>
+                <div class="flex items-center gap-3 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
+                    <div class="text-right">
+                        <p id="bj-clock" class="text-sm font-mono font-bold text-slate-700 leading-none">00:00:00</p>
                     </div>
-                    <i class="fas fa-clock text-slate-600 text-lg"></i>
+                    <i class="fas fa-clock text-slate-400 text-sm"></i>
                 </div>
-            </header>
+            </div>
+        </header>
 
-            <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 overflow-hidden min-h-0">
+        <div class="container mx-auto px-4 py-6 max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <div class="lg:col-span-4 flex flex-col gap-5">
                 
-                <div class="lg:col-span-4 flex flex-col gap-4 overflow-y-auto custom-scrollbar pr-1 pb-2">
-                    <div class="pro-card p-6 rounded-3xl bg-white border-t-[6px] border-t-orange-500 relative group transition-all shrink-0">
-                        <div class="flex justify-between items-start mb-4">
-                            <h3 class="text-slate-400 text-xs font-black uppercase tracking-widest">今日最大单笔转账</h3>
-                            <div class="bg-orange-50 text-orange-600 p-2 rounded-lg"><i class="fas fa-whale text-sm"></i></div>
-                        </div>
-                        <div class="flex items-baseline gap-2 mb-3">
-                            <p class="text-4xl font-black text-slate-900 font-mono tracking-tighter" id="daily-max-val">0.00</p>
-                            <p class="text-xs font-black text-orange-500 bg-orange-50 px-2 py-1 rounded-full uppercase">BTC</p>
-                        </div>
-                        <p class="text-[10px] font-mono text-slate-400 truncate bg-slate-50 p-3 rounded-xl mb-4" id="daily-max-txid">正在同步链上数据...</p>
-                        <a id="daily-max-link" href="#" target="_blank" class="flex items-center justify-center gap-2 bg-slate-900 text-white py-3 rounded-xl text-xs font-bold hover:bg-orange-600 transition-all shadow-lg">
-                            <i class="fas fa-search-dollar"></i> 追踪资金去向
-                        </a>
+                <div class="pro-card p-6 rounded-2xl bg-white border-l-[6px] border-l-orange-500 shadow-sm">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-slate-400 text-[10px] font-black uppercase tracking-widest">今日最大转账</h3>
+                        <span class="bg-orange-50 text-orange-600 text-xs px-2 py-1 rounded font-bold">24H TOP</span>
                     </div>
+                    <div class="flex items-baseline gap-2 mb-2">
+                        <p class="text-4xl font-black text-slate-900 font-mono tracking-tighter" id="daily-max-val">0.00</p>
+                        <span class="text-xs font-bold text-slate-400">BTC</span>
+                    </div>
+                    <p class="text-[10px] font-mono text-slate-400 bg-slate-50 p-2 rounded truncate mb-4" id="daily-max-txid">等待数据同步...</p>
+                    <a id="daily-max-link" href="#" target="_blank" class="block w-full text-center bg-slate-900 text-white py-3 rounded-xl text-xs font-bold hover:bg-orange-600 transition shadow-lg active:scale-95">
+                        <i class="fas fa-search-dollar mr-2"></i> 追踪资金去向
+                    </a>
+                </div>
 
-                    <div class="pro-card p-5 rounded-3xl bg-white shrink-0">
-                        <h3 class="text-slate-400 text-xs font-black uppercase tracking-widest mb-4">全网运行状态</h3>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                <p class="text-slate-400 text-[10px] font-bold mb-1">最新区块高度</p>
-                                <p class="text-xl font-black text-slate-900 font-mono" id="stat-height">-</p>
-                            </div>
-                            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                <p class="text-slate-400 text-[10px] font-bold mb-1">已监控区块数</p>
-                                <p class="text-xl font-black text-orange-600 font-mono" id="stat-count">-</p>
-                            </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="pro-card p-4 rounded-2xl bg-white">
+                        <p class="text-slate-400 text-[10px] font-bold uppercase mb-1">最新区块</p>
+                        <p class="text-xl font-black text-slate-900 font-mono" id="stat-height">-</p>
+                    </div>
+                    <div class="pro-card p-4 rounded-2xl bg-white">
+                        <p class="text-slate-400 text-[10px] font-bold uppercase mb-1">已监控</p>
+                        <p class="text-xl font-black text-orange-600 font-mono" id="stat-count">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-8 flex flex-col gap-6">
+                
+                <div class="pro-card p-5 rounded-2xl bg-white">
+                    <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+                        <h3 class="text-slate-900 font-bold text-sm flex items-center">
+                            <i class="fas fa-chart-area text-orange-500 mr-2"></i> 资金流向
+                        </h3>
+                        <div class="flex bg-slate-100 p-1 rounded-lg">
+                            <button onclick="updateChart('24h')" id="btn-24h" class="text-[10px] font-bold px-3 py-1 rounded bg-white shadow-sm">24H</button>
+                            <button onclick="updateChart('7d')" id="btn-7d" class="text-[10px] font-bold px-3 py-1 rounded text-slate-400">7D</button>
+                            <button onclick="loadAllHistory()" id="btn-all" class="text-[10px] font-bold px-3 py-1 rounded text-blue-500 flex items-center">
+                                <i class="fas fa-cloud-download-alt mr-1"></i> 全史
+                            </button>
                         </div>
                     </div>
-                    
-                    <div class="pro-card p-4 rounded-2xl bg-slate-50 border border-slate-200 shrink-0">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">历史档案状态</p>
-                        <div class="flex items-center gap-2 text-xs font-medium text-slate-600">
-                            <i class="fas fa-database text-blue-500"></i>
-                            <span id="archive-status">仅加载热数据</span>
-                        </div>
+                    <div class="h-[220px] w-full relative">
+                        <canvas id="whaleChart"></canvas>
                     </div>
                 </div>
 
-                <div class="lg:col-span-8 flex flex-col gap-4 h-full overflow-hidden">
-                    
-                    <div class="pro-card p-5 rounded-3xl bg-white flex flex-col flex-none h-[320px]">
-                        <div class="flex justify-between items-center mb-2">
-                            <h3 class="text-slate-900 font-black text-sm flex items-center">
-                                <i class="fas fa-chart-line text-orange-500 mr-2"></i> 巨鲸资金流向 (BTC)
-                            </h3>
-                            <div class="flex bg-slate-100 rounded-lg p-1 gap-1">
-                                <button onclick="updateChart('24h')" id="btn-24h" class="text-[10px] font-bold px-3 py-1 rounded-md bg-white shadow text-slate-800 transition">24H</button>
-                                <button onclick="updateChart('7d')" id="btn-7d" class="text-[10px] font-bold px-3 py-1 rounded-md text-slate-400 hover:text-slate-600 transition">7D</button>
-                                <button onclick="loadAllHistory()" id="btn-all" class="text-[10px] font-bold px-3 py-1 rounded-md text-blue-500 hover:text-blue-700 hover:bg-blue-50 transition flex items-center">
-                                    <i class="fas fa-cloud-download-alt mr-1"></i> 全史
-                                </button>
-                            </div>
+                <div class="pro-card rounded-2xl bg-white overflow-hidden flex flex-col">
+                    <div class="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-center gap-3">
+                        <div class="relative w-full sm:w-64">
+                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input type="text" id="searchInput" oninput="handleSearch()" placeholder="搜索高度或哈希..." class="w-full text-xs font-bold pl-8 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all">
                         </div>
-                        <div class="chart-wrapper flex-1 w-full min-h-0">
-                            <canvas id="whaleChart"></canvas>
-                        </div>
+                        <div id="pageInfo" class="text-[10px] font-bold text-slate-400 font-mono bg-white px-3 py-1 rounded border border-slate-200">PAGE 1 / 1</div>
                     </div>
 
-                    <div class="flex-1 flex flex-col pro-card rounded-3xl overflow-hidden bg-white min-h-0">
-                        <div class="px-6 py-3 border-b border-slate-100 bg-slate-50/30 flex justify-between items-center flex-none">
-                            <div class="relative w-56">
-                                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
-                                <input type="text" id="searchInput" oninput="handleSearch()" placeholder="搜索高度或哈希..." class="w-full text-xs font-bold pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:border-orange-500 transition-all">
-                            </div>
-                            <div id="pageInfo" class="text-[10px] font-black text-slate-400 font-mono">第 1 / 1 页</div>
+                    <div id="block-list" class="p-4 space-y-3 bg-white min-h-[300px]">
                         </div>
-
-                        <div id="block-list" class="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/50 custom-scrollbar">
-                            </div>
-                        
-                        <div class="p-3 border-t border-slate-100 flex justify-between bg-white px-6 flex-none">
-                            <button onclick="prevPage()" id="prevBtn" class="text-[10px] font-black px-4 py-2 border border-slate-200 rounded-xl disabled:opacity-20 hover:bg-slate-50">上一页</button>
-                            <button onclick="nextPage()" id="nextBtn" class="text-[10px] font-black px-4 py-2 border border-slate-200 rounded-xl disabled:opacity-20 hover:bg-slate-50">下一页</button>
-                        </div>
+                    
+                    <div class="p-4 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                        <button onclick="prevPage()" id="prevBtn" class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50">上一页</button>
+                        <button onclick="nextPage()" id="nextBtn" class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50">下一页</button>
                     </div>
                 </div>
+
             </div>
         </div>
     </main>
 
     <script>
         let allData = [], filteredData = [], currentPage = 1;
-        const pageSize = 20;
+        const pageSize = 15; // 每页显示数量适中
         let whaleChartInstance = null;
         let isHistoryLoaded = false; 
 
-        // 仓库配置
         const REPO_OWNER = 'lovexw';
         const REPO_NAME = 'btc-block-new';
         const START_YEAR = 2026; 
@@ -214,7 +204,7 @@
         async function loadAllHistory() {
             if (isHistoryLoaded) return;
             const btn = document.getElementById('btn-all');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> 同步中...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>';
             btn.disabled = true;
 
             const now = new Date();
@@ -242,13 +232,11 @@
                 filteredData = [...allData];
 
                 document.getElementById('stat-count').innerText = allData.length;
-                document.getElementById('archive-status').innerHTML = `<span class="text-green-500">已加载 ${allData.length} 个历史区块</span>`;
-                
                 render();
                 updateChart('all');
 
-                btn.innerHTML = '<i class="fas fa-check mr-1"></i> 全史';
-                btn.className = "text-[10px] font-bold px-3 py-1.5 rounded-md bg-blue-50 text-blue-600 transition flex items-center";
+                btn.innerHTML = '全史';
+                btn.className = "text-[10px] font-bold px-3 py-1 rounded bg-blue-50 text-blue-600";
                 isHistoryLoaded = true;
             } catch (e) {
                 console.error("历史加载失败", e);
@@ -269,29 +257,36 @@
                         label: '最大转账 (BTC)',
                         data: slicedData.map(d => d.top_txs[0].value),
                         borderColor: '#f97316',
-                        backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                        backgroundColor: (context) => {
+                            const ctx = context.chart.ctx;
+                            const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+                            gradient.addColorStop(0, 'rgba(249, 115, 22, 0.2)');
+                            gradient.addColorStop(1, 'rgba(249, 115, 22, 0)');
+                            return gradient;
+                        },
                         borderWidth: 2,
                         pointRadius: 0,
-                        pointHoverRadius: 6,
+                        pointHoverRadius: 4,
                         fill: true,
-                        tension: 0.3
+                        tension: 0.4
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false, // 关键：允许填满父容器
+                    maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
+                    interaction: { mode: 'index', intersect: false },
                     scales: {
                         x: { 
                             type: 'time', 
                             time: { unit: 'hour', displayFormats: { hour: 'HH:mm', day: 'MM-dd' } },
                             grid: { display: false },
-                            ticks: { font: { size: 9 }, color: '#94a3b8', maxRotation: 0 }
+                            ticks: { font: { size: 9 }, color: '#cbd5e1', maxRotation: 0 }
                         },
                         y: {
                             beginAtZero: true,
-                            grid: { color: '#f1f5f9' },
-                            ticks: { font: { size: 10 } }
+                            grid: { color: '#f8fafc', borderDash: [4, 4] },
+                            ticks: { font: { size: 9 }, color: '#94a3b8' }
                         }
                     }
                 }
@@ -302,8 +297,8 @@
             ['24h', '7d', 'all'].forEach(p => {
                 const btn = document.getElementById(`btn-${p}`);
                 if(!btn) return;
-                const activeClass = "text-[10px] font-bold px-3 py-1 rounded-md bg-white shadow text-slate-800 transition";
-                const inactiveClass = "text-[10px] font-bold px-3 py-1 rounded-md text-slate-400 hover:text-slate-600 transition";
+                const activeClass = "text-[10px] font-bold px-3 py-1 rounded bg-white shadow-sm text-slate-800 transition";
+                const inactiveClass = "text-[10px] font-bold px-3 py-1 rounded text-slate-400 hover:text-slate-600 transition";
                 btn.className = (p === period) ? activeClass : inactiveClass;
             });
 
@@ -327,41 +322,35 @@
             
             pageItems.forEach(block => {
                 const card = document.createElement('div');
-                card.className = 'pro-card p-4 rounded-2xl bg-white hover-card transition-all flex flex-col gap-3'; // 列表项变得更紧凑一点
+                card.className = 'border border-slate-100 rounded-xl p-3 hover:border-orange-200 transition-colors bg-slate-50/50';
                 
                 let txs = block.top_txs.map((tx, i) => `
-                    <div class="flex justify-between items-center py-2 border-b border-slate-50 last:border-0 group">
-                        <div class="flex items-center gap-3 overflow-hidden">
-                            <span class="w-6 h-6 rounded-lg bg-slate-50 flex items-center justify-center text-[10px] font-black text-slate-400 group-hover:bg-orange-50 group-hover:text-orange-600 transition-colors">#${i+1}</span>
-                            <div class="flex flex-col truncate">
-                                <span class="font-mono text-[11px] text-slate-500 truncate w-24 md:w-64 font-medium" title="${tx.txid}">${tx.txid}</span>
-                            </div>
+                    <div class="flex justify-between items-center py-1.5 border-b border-slate-100 last:border-0">
+                        <div class="flex items-center gap-2 overflow-hidden flex-1">
+                            <span class="text-[10px] font-bold text-slate-300 w-4">#${i+1}</span>
+                            <span class="font-mono text-[10px] text-slate-500 truncate w-24 sm:w-auto font-medium" title="${tx.txid}">${tx.txid.substring(0, 6)}...${tx.txid.substring(tx.txid.length-6)}</span>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <div class="text-right">
-                                <span class="font-black text-slate-900 font-mono text-sm tracking-tighter">${tx.value.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
-                                <span class="text-[8px] font-black text-orange-500 ml-1">BTC</span>
-                            </div>
-                            <a href="https://mempool.space/zh/tx/${tx.txid}" target="_blank" class="w-6 h-6 flex items-center justify-center rounded-lg bg-slate-50 text-slate-300 hover:bg-slate-900 hover:text-white transition-all shadow-sm">
-                                <i class="fas fa-chevron-right text-[10px]"></i>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-slate-900 font-mono text-xs">${tx.value.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1})}</span>
+                            <span class="text-[8px] font-bold text-orange-400">BTC</span>
+                            <a href="https://mempool.space/zh/tx/${tx.txid}" target="_blank" class="text-slate-300 hover:text-orange-500 ml-1">
+                                <i class="fas fa-external-link-alt text-[10px]"></i>
                             </a>
                         </div>
                     </div>
                 `).join('');
 
                 card.innerHTML = `
-                    <div class="flex justify-between items-center pb-2 border-b-2 border-slate-100">
-                        <div class="flex items-center gap-3">
-                            <div class="w-1.5 h-6 btc-gradient rounded-full"></div>
-                            <span class="text-lg font-black text-slate-900 font-mono tracking-tighter">BLOCK #${block.height}</span>
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="flex items-center gap-2">
+                            <div class="w-1 h-4 bg-orange-500 rounded-full"></div>
+                            <span class="text-sm font-black text-slate-800 font-mono">#${block.height}</span>
                         </div>
-                        <div class="flex flex-col items-end">
-                            <span class="text-[8px] font-black text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-200 uppercase tracking-widest flex items-center gap-1">
-                                <i class="fas fa-check-double text-[8px]"></i> 确认
-                            </span>
-                        </div>
+                        <span class="text-[9px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <i class="fas fa-check text-[8px]"></i> 确认
+                        </span>
                     </div>
-                    <div class="space-y-0.5">${txs}</div>
+                    <div class="space-y-0">${txs}</div>
                 `;
                 list.appendChild(card);
             });
@@ -369,6 +358,11 @@
             document.getElementById('pageInfo').innerText = `第 ${currentPage} / ${total || 1} 页`;
             document.getElementById('prevBtn').disabled = currentPage === 1;
             document.getElementById('nextBtn').disabled = currentPage === total || total === 0;
+            
+            // 翻页后自动回到列表顶部
+            if(window.innerWidth < 1024) {
+                 // 手机端不需要强行滚动
+            }
         }
 
         function handleSearch() {
