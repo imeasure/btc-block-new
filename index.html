@@ -6,10 +6,8 @@
     <title>Habfut 比特币情报终端</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <script src="https://lib.baomitu.com/Chart.js/4.4.0/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
     <style>
@@ -200,8 +198,10 @@
 
         async function init() {
             try {
-                // 使用 jsDelivr CDN 确保数据更新且国内可访问
-                const url = `https://cdn.jsdelivr.net/gh/${REPO_OWNER}/${REPO_NAME}@main/data.json`;
+                // 🔥 核心修改：在 URL 后添加时间戳，强制刷新缓存
+                const timestamp = new Date().getTime();
+                const url = `https://cdn.jsdelivr.net/gh/${REPO_OWNER}/${REPO_NAME}@main/data.json?t=${timestamp}`;
+                
                 const resp = await fetch(url);
                 if (!resp.ok) throw new Error('网络请求失败');
                 const data = await resp.json();
@@ -211,7 +211,6 @@
                 render();
                 initChart(allData);
                 
-                // 初始化新增的两个宏观图表
                 if(data.daily_stats) {
                     initDailyCharts(data.daily_stats);
                 }
@@ -261,11 +260,15 @@
             let currentYear = now.getFullYear();
             let currentMonth = now.getMonth() + 1;
             let fetchTasks = [];
+            const timestamp = new Date().getTime(); // 历史档案也加时间戳
 
             while (true) {
                 if (currentYear < START_YEAR || (currentYear === START_YEAR && currentMonth < START_MONTH)) break;
                 const monthStr = currentMonth.toString().padStart(2, '0');
-                const fileUrl = `https://cdn.jsdelivr.net/gh/${REPO_OWNER}/${REPO_NAME}@main/archive/${currentYear}_${monthStr}.json`;
+                
+                // 🔥 核心修改：给历史文件也加上时间戳
+                const fileUrl = `https://cdn.jsdelivr.net/gh/${REPO_OWNER}/${REPO_NAME}@main/archive/${currentYear}_${monthStr}.json?t=${timestamp}`;
+                
                 fetchTasks.push(fetch(fileUrl).then(res => res.ok ? res.json() : []).catch(() => []));
                 currentMonth--;
                 if (currentMonth === 0) { currentMonth = 12; currentYear--; }
@@ -357,7 +360,6 @@
             });
         }
 
-        // 初始化每日图表
         function initDailyCharts(dailyStats) {
             const dates = Object.keys(dailyStats).sort();
             const rewards = dates.map(date => dailyStats[date].reward);
@@ -374,7 +376,6 @@
                 }
             };
 
-            // 1. 挖矿产出图表 (侧边栏)
             const ctxReward = document.getElementById('rewardChart').getContext('2d');
             rewardChartInstance = new Chart(ctxReward, {
                 type: 'bar',
@@ -390,7 +391,6 @@
                 options: commonOptions
             });
 
-            // 2. 全网移动总量图表 (全宽)
             const ctxVolume = document.getElementById('volumeChart').getContext('2d');
             volumeChartInstance = new Chart(ctxVolume, {
                 type: 'line',
