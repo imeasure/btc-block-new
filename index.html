@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Habfut 比特币情报终端</title>
+    <title>哈勃未来 比特币情报终端</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://lib.baomitu.com/Chart.js/4.4.0/chart.umd.min.js"></script>
@@ -163,7 +163,7 @@
         let volumeChartInstance = null;
         let isHistoryLoaded = false; 
 
-        // 仓库配置
+        // 仓库配置 (注意检查这里是否与你的 GitHub 一致)
         const REPO_OWNER = 'lovexw';
         const REPO_NAME = 'btc-block-new';
         const START_YEAR = 2026; 
@@ -198,7 +198,7 @@
 
         async function init() {
             try {
-                // 🔥 核心修改：在 URL 后添加时间戳，强制刷新缓存
+                // ✅ 核心修复：添加 ?t=时间戳，强制请求最新数据，解决缓存滞后
                 const timestamp = new Date().getTime();
                 const url = `https://cdn.jsdelivr.net/gh/${REPO_OWNER}/${REPO_NAME}@main/data.json?t=${timestamp}`;
                 
@@ -243,6 +243,8 @@
             
             allData = Array.from(uniqueMap.values()).sort((a, b) => b.height - a.height);
 
+            // ⚠️ 注意：这里使用 data.json 自带的时间，如果没有才用估算
+            // 这样能保证时间轴更准确
             let nowTs = Math.floor(Date.now() / 1000);
             allData.forEach((item, index) => {
                 if(!item.time) item.time = nowTs - (index * 600);
@@ -260,13 +262,13 @@
             let currentYear = now.getFullYear();
             let currentMonth = now.getMonth() + 1;
             let fetchTasks = [];
-            const timestamp = new Date().getTime(); // 历史档案也加时间戳
+            const timestamp = new Date().getTime(); // 历史数据也加时间戳
 
             while (true) {
                 if (currentYear < START_YEAR || (currentYear === START_YEAR && currentMonth < START_MONTH)) break;
                 const monthStr = currentMonth.toString().padStart(2, '0');
                 
-                // 🔥 核心修改：给历史文件也加上时间戳
+                // ✅ 历史档案也强制刷新
                 const fileUrl = `https://cdn.jsdelivr.net/gh/${REPO_OWNER}/${REPO_NAME}@main/archive/${currentYear}_${monthStr}.json?t=${timestamp}`;
                 
                 fetchTasks.push(fetch(fileUrl).then(res => res.ok ? res.json() : []).catch(() => []));
