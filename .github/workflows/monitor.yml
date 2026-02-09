@@ -1,8 +1,9 @@
 name: BTC Monitor Bot
+
 on:
   schedule:
-    - cron: '*/30 * * * *' # 每 30 分钟执行
-  workflow_dispatch: # 支持手动触发
+    - cron: '*/5 * * * *'   # 🔥 改为每 5 分钟，极限提速！
+  workflow_dispatch:
 
 jobs:
   build:
@@ -21,6 +22,7 @@ jobs:
         run: |
           git config --global user.name "Bot"
           git config --global user.email "bot@github.com"
-          git add data.json
+          git add data.json archive/
+          # 注意：保留 [skip ci] 是为了不浪费 Cloudflare 的构建额度
           git commit -m "Update BTC data [skip ci]" || exit 0
           git push
