@@ -1,24 +1,6 @@
 {
-    "last_height": 940789,
+    "last_height": 940790,
     "history": [
-        {
-            "height": 939789,
-            "time": 1772937480,
-            "top_txs": [
-                {
-                    "txid": "9cda348b9f18e3ec48fbb69448e30cc0e7a72892cd609be533afe9dd4ebad882",
-                    "value": 389.79289947
-                },
-                {
-                    "txid": "1c0587045c9853f9087b8de10544d8eec7271c6216bd1611768ee4a8dd403469",
-                    "value": 219.20462582
-                },
-                {
-                    "txid": "ab9b45aa92f19edb11ac58c9c67e6463600fa2975d505cc38b196114a2476dcb",
-                    "value": 185.30887849
-                }
-            ]
-        },
         {
             "height": 939790,
             "time": 1772937758,
@@ -17958,14 +17940,32 @@
                     "value": 204.83847758
                 }
             ]
+        },
+        {
+            "height": 940790,
+            "time": 1773589680,
+            "top_txs": [
+                {
+                    "txid": "87a1ae9b66f4c36a45f59ea866f9450afdaad75a84c8a365afdc44f8a2e2efb9",
+                    "value": 2815.635975
+                },
+                {
+                    "txid": "b3a19d0e0affddba5b5d814a93270e5830ed58db8e94402210ecd3441677bf9e",
+                    "value": 2177.82580714
+                },
+                {
+                    "txid": "60674dc34082885cf0ecc0f09f37e9073f1ce5e779969bc1d4d32e8248af828a",
+                    "value": 691.52775508
+                }
+            ]
         }
     ],
     "daily_max": {
-        "value": 20149.35406745,
-        "txid": "16df5d012c39f31973e9196106ce10c8f19d6db1f332184141d4acdc68150cc8",
-        "height": 940781
+        "value": 2815.635975,
+        "txid": "87a1ae9b66f4c36a45f59ea866f9450afdaad75a84c8a365afdc44f8a2e2efb9",
+        "height": 940790
     },
-    "last_date": "2026-03-15",
+    "last_date": "2026-03-16",
     "daily_stats": {
         "2026-02-08": {
             "reward": 282.46298111000004,
@@ -18108,8 +18108,8 @@
             "volume": 640004.0328347696
         },
         "2026-03-15": {
-            "reward": 423.78979849999996,
-            "volume": 507763.61819644936
+            "reward": 426.94913805,
+            "volume": 518690.81108544936
         }
     }
 }
