@@ -1,78 +1,6 @@
 {
-    "last_height": 941702,
+    "last_height": 941706,
     "history": [
-        {
-            "height": 940680,
-            "time": 1773521278,
-            "top_txs": [
-                {
-                    "txid": "326e9477b555f286c6fde38ded1d120f4a6b00b7af230c905ce55a0a9edeaaee",
-                    "value": 37.35493002
-                },
-                {
-                    "txid": "14d07779bd9d566eed4c57fc8acf0c60b8381b0f3b7402026acb0227ac107118",
-                    "value": 12.33304136
-                },
-                {
-                    "txid": "c9682e50d83f2cc833e586f3327376246027727cf6e38907e1ffe8a25c778adf",
-                    "value": 6.0253648
-                }
-            ]
-        },
-        {
-            "height": 940681,
-            "time": 1773521590,
-            "top_txs": [
-                {
-                    "txid": "fe2c207882dec474948f0b9f86d94222ec598cde10b2963ba1d7557f5b5c0414",
-                    "value": 208.14049168
-                },
-                {
-                    "txid": "b7bcae56e80237119cdfa98f1e62a74e31f09311020f61354e83e8ef8a0d9f82",
-                    "value": 143.09022103
-                },
-                {
-                    "txid": "b012ad90c31620d5c0a63c6947a7ed9c3d626dc7501c400ede088950ef6fb3e4",
-                    "value": 125.17335919
-                }
-            ]
-        },
-        {
-            "height": 940682,
-            "time": 1773521605,
-            "top_txs": [
-                {
-                    "txid": "333de3f0b04cf0b02357bdca729d7e9107e37a4ae4837e585954c2579abe1377",
-                    "value": 28.45982845
-                },
-                {
-                    "txid": "b9ca7ab62403bd91bd79fef977ab9b3b92434be2724bf80ea7465d53eff00e0f",
-                    "value": 3.12655819
-                },
-                {
-                    "txid": "1996c60091ffc3c7ae2a3a4a16107e8431adfde2d961c423d80952aa0568358f",
-                    "value": 1.04198668
-                }
-            ]
-        },
-        {
-            "height": 940683,
-            "time": 1773522634,
-            "top_txs": [
-                {
-                    "txid": "41d0f2dd55087c95905d4e5fdacea31c8940abceca0e9d5e2facc5ad9d95f676",
-                    "value": 4550.60795455
-                },
-                {
-                    "txid": "7825c5135c0a06f784c21cbb611d813111fd9ece25f19b5fb65ba994e1330d7d",
-                    "value": 871.35037003
-                },
-                {
-                    "txid": "c41b91b5e788719641d4ea49ca1c2c1b55d4032b7601a882d92506006366e16a",
-                    "value": 863.81469529
-                }
-            ]
-        },
         {
             "height": 940684,
             "time": 1773523574,
@@ -17922,12 +17850,84 @@
             "height": 941702,
             "time": 1774180391,
             "top_txs": []
+        },
+        {
+            "height": 941703,
+            "time": 1774180607,
+            "top_txs": [
+                {
+                    "txid": "e267f9d41df6dbc7be52e978db403c881d934c63e85ae5dabca119e6ed8640ee",
+                    "value": 158.44003522
+                },
+                {
+                    "txid": "e0cfd1612c532993f2dbc7ecc2101327328b2a6fa43038b61af309ede74a49a3",
+                    "value": 155.5349167
+                },
+                {
+                    "txid": "dbbdf008f0e6d0f8ab84a4b48951e3b3333acf7956e680ca64cff3ba7966ffa0",
+                    "value": 81.11106001
+                }
+            ]
+        },
+        {
+            "height": 941704,
+            "time": 1774181165,
+            "top_txs": [
+                {
+                    "txid": "09e5374bc6b520c67b8bc88766cd9c883f21681440672b8925793f7162b57364",
+                    "value": 168.6534899
+                },
+                {
+                    "txid": "e9271c05ac8e4435768c6e297754d2015f6a5314c4710aa2ff6806392d956873",
+                    "value": 167.26702375
+                },
+                {
+                    "txid": "a5e57c8944ce3c4d1e3a9115e9a1f2294585d5ee31baba6f10c057b7879ba233",
+                    "value": 155.50898781
+                }
+            ]
+        },
+        {
+            "height": 941705,
+            "time": 1774182997,
+            "top_txs": [
+                {
+                    "txid": "ab0b1f6b33dec08b65640c3b0a32467687d1430b668dcfb8b8dec2250c6be8b0",
+                    "value": 20199.56829782
+                },
+                {
+                    "txid": "c5294d95334a306fe15578b976cbe7c269701b15a72748a902e3334cb42167f3",
+                    "value": 657.00375496
+                },
+                {
+                    "txid": "e2313f263586fe89cfcdf86bfcb12bae651b1a7d0ed2873fa163569b94b69d78",
+                    "value": 168.65044321
+                }
+            ]
+        },
+        {
+            "height": 941706,
+            "time": 1774183203,
+            "top_txs": [
+                {
+                    "txid": "3bcba7a0407323a7fb0797afd1a9ee423efdc4d8418f747fa6d8faaa628c1b27",
+                    "value": 4055.83472402
+                },
+                {
+                    "txid": "50dc07b39831b7b90aa92539253e6752f09f12792bfe55121863636077cbabec",
+                    "value": 155.43009402
+                },
+                {
+                    "txid": "87a4fc752a5383aa0a6490458349d8c62c0b683a2bc37c596a2de36cf2335e18",
+                    "value": 147.73690008
+                }
+            ]
         }
     ],
     "daily_max": {
-        "value": 20196.44568644,
-        "txid": "ed8c3902ba5cda05c30d6dca7553663d701a7252df43fab7e6bb8f22b314a8ec",
-        "height": 941625
+        "value": 20199.56829782,
+        "txid": "ab0b1f6b33dec08b65640c3b0a32467687d1430b668dcfb8b8dec2250c6be8b0",
+        "height": 941705
     },
     "last_date": "2026-03-22",
     "daily_stats": {
@@ -18100,8 +18100,8 @@
             "volume": 494298.9978387391
         },
         "2026-03-22": {
-            "reward": 348.7539768699999,
-            "volume": 372041.53863234015
+            "reward": 361.32685358,
+            "volume": 410664.4809479206
         }
     }
 }
